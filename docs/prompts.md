@@ -44,3 +44,14 @@ O formato dos marcadores (`[[caminho:L10-L20]]`) fica nas tarefas (`overview.md`
 - Chat técnico ("Como funciona a validação de citações?"): 193 palavras, 13 citações válidas, todas no arquivo certo.
 - Chat cliente ("O produto emite nota fiscal?"): respondeu "Não", mas disse que a nota fiscal "foi prevista no escopo". Na verdade, o documento de produto só cita a nota fiscal como exemplo da loja de demonstração. **Confusão de contexto**: entra no eval da Fase 11 (pergunta de controle sobre algo citado só como exemplo).
 - Na mesma rodada, o reprocessamento descartou 10 citações (na Fase 4 tinham sido 0). O validador funcionou, mas vale medir no eval se o descarte está alto.
+
+## v3 (2026-11-06), Fase 7: lado a lado e "Isso faz?"
+
+| Arquivo | Papel |
+|---|---|
+| `compare_lenses.md` | Uma resposta por lente (`cliente`, `nao_tecnico`, `tecnico`), com os mesmos fatos e a mesma conclusão; até 150 palavras cada; segue a regra de citação de cada lente. O prompt traz as três lentes juntas (`build_for_lenses`) |
+| `does_it.md` | Veredito pelo status da funcionalidade da base (com o nome copiado exatamente); sem funcionalidade, "sim" só com o trecho do código que prova; aviso contra exemplos e menções de passagem (o caso da nota fiscal da Fase 5); justificativa sem marcadores; até 3 evidências com trecho curto |
+
+**O backend não depende do prompt para a coerência:** `lenses/verdict.py` refaz o veredito a partir da base e descarta evidências que não conferem.
+
+**Teste real: pendente.** A cota diária do `gemini-3.5-flash` acabou na Fase 6. O `gemini-3.7-flash` deu 503 e 504 seguidos, e o `gemini-3.6-flash` respondeu ao `llm:check`, mas esgotou o limite diário na etapa 2 do processamento. As telas foram conferidas com respostas simuladas. Quando a cota voltar, rodar: processar o projeto de teste, uma pergunta no lado a lado e "O sistema gera nota fiscal?" no "Isso faz?".

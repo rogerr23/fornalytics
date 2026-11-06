@@ -69,6 +69,23 @@ sequenceDiagram
 - O trabalho durante o stream usa sessões curtas (`SessionFactory`), como o processamento em segundo plano.
 - `citations/markers.py` acha e confere os marcadores `[[caminho:Lx-Ly]]` ao fim de cada resposta.
 
+## Lado a lado e "Isso faz?" (Fase 7)
+
+- As duas funções usam o mesmo contexto do chat (base e arquivos relevantes, em `lenses/answer.load_question_context`), fazem **uma** chamada `generate_json` e respondem em JSON, sem streaming.
+- **Lado a lado** (`lenses/compare.py`): o prompt traz as três lentes de uma vez (`PromptBuilder.build_for_lenses`). Os marcadores de cada resposta são conferidos como no chat.
+- **"Isso faz?"** (`lenses/does_it.py` e `lenses/verdict.py`, regra pura): as evidências passam pelo validador forte, como as da base. O veredito sai do status da funcionalidade na base:
+
+  | Status na base | Veredito |
+  |---|---|
+  | `implemented` ou `undocumented` | Sim |
+  | `partial` | Parcialmente |
+  | `documented_only` | Não |
+
+  - Sem funcionalidade correspondente na base, "sim" ou "parcialmente" só valem com evidência válida no código.
+  - Quando o backend corrige o modelo, a resposta vem com `adjusted: true` e uma justificativa tirada da própria base.
+  - É o mesmo status que o Ideia × Código agrupa, então as duas abas nunca se contradizem.
+- Os resultados não ficam salvos: o histórico existe só na tela, enquanto ela estiver aberta.
+
 ## Frontend
 
 - `app/`: rotas, layout e providers (TanStack Query e lente ativa).
@@ -84,7 +101,7 @@ sequenceDiagram
 | `/` | `ProjectsPage` | `projects`, `health` |
 | `/projects/new` e `/projects/:id/material` | `NewProjectPage` | `projects`, `upload`, `processing` |
 | `/projects/:id/processing` | `ProcessingPage` | `processing` |
-| `/projects/:id?tab=overview\|chat` | `ProjectPage` | `lens`, `overview`, `chat`, `citations`, `processing` |
+| `/projects/:id?tab=overview\|chat\|compare\|does-it` | `ProjectPage` | `lens`, `overview`, `chat`, `compare`, `does-it`, `citations`, `processing` |
 
 ### Streaming
 
@@ -122,6 +139,6 @@ flowchart LR
 | Base do produto: extração em duas etapas, reconciliação, validação de citações, processamento em segundo plano e status por SSE | ✅ | 4 |
 | Lentes: visão geral por lente (cache) e chat com streaming, contexto selecionado e citações por marcador | ✅ | 5 |
 | Telas do MVP: projetos, material com resumo da ingestão, progresso por SSE, projeto com seletor de lente, visão geral, chat e visualizador de citações | ✅ | 6 |
-| Lado a lado e "Isso faz?" | ⏳ | 7 |
+| Lado a lado (uma chamada para as 3 lentes) e "Isso faz?" com veredito coerente com a base | ✅ | 7 |
 | Ideia × Código (agrupa a base por status) | ⏳ | 8 |
 | Fluxo (JSON → Mermaid montado no backend) | ⏳ | 9 |

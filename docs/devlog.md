@@ -105,3 +105,19 @@ Uma entrada por sessão de trabalho: o que foi pedido, o que saiu, o que preciso
   - o selo da lente esticava na largura toda.
 - **Projeto de teste:** "Fornalytics (teste)" ficou no banco com o zip e o documento, em rascunho. Falta clicar em **Processar** quando a cota voltar.
 - **Observação:** o build avisa que o pacote passa de 500 KB (por causa do Markdown). Não atrapalha a demo; dividir o código fica para a Fase 11, se fizer falta.
+
+## 2026-11-06 — Fase 7 (lado a lado e "Isso faz?")
+
+- **Pedido:** explicar a Fase 7 e executá-la com as recomendações (veredito pela base, "Isso faz?" na lente ativa, sem gravar resultados, teste real com outro modelo se houvesse cota).
+- **Resultado:** 103 testes no backend e 10 no frontend. As duas abas foram conferidas no navegador com respostas simuladas:
+  - três colunas, com a citação técnica clicável;
+  - um "Não" do modelo para uma funcionalidade implementada foi corrigido para "Sim", com o aviso de ajuste e a evidência da base.
+- **Teste real:** não foi possível hoje.
+  - `gemini-3.7-flash`: 504 e 503 seguidos.
+  - `gemini-3.6-flash`: passou no `llm:check`, mas esgotou o limite diário na etapa 2 do processamento (o modelo foi passado só no comando, sem mexer no `.env`).
+  - A mensagem nova de cota apareceu na tela como esperado ("cerca de 14 horas").
+  - O projeto de teste voltou para rascunho.
+- **Ajustes no caminho:**
+  - trocar de aba apagava as respostas do lado a lado e do "Isso faz?" (agora ficam no cache do TanStack Query durante a sessão);
+  - o status `implemented` aparecia como "prometida e implementada" até em projetos só de código (agora: "implementada no código").
+- **Pendente:** teste real das duas abas quando a cota voltar (roteiro em `docs/prompts.md`, v3).

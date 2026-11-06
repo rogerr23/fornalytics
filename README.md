@@ -133,6 +133,8 @@ Com `npm run dev` rodando, abra http://localhost:5173:
 4. **Projeto:** escolha a lente (Cliente, Não técnico ou Técnico) no canto superior.
    - **Visão geral:** gerada na primeira abertura de cada lente; depois vem do cache.
    - **Chat:** perguntas na lente ativa.
+   - **Lado a lado:** a mesma pergunta respondida nas três lentes ao mesmo tempo.
+   - **Isso faz?:** Sim, Não ou Parcialmente, com a justificativa e as evidências.
    - Citações válidas abrem o trecho do arquivo; as que não conferem aparecem como "não verificada".
 5. Se o material mudar depois do processamento, aparece o aviso **O material mudou** com o botão **Reprocessar**.
 

@@ -4,6 +4,13 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 
 ## [Não lançado]
 
+### Fase 7 — lado a lado e "Isso faz?"
+- `POST /compare-lenses`: a mesma pergunta nas três lentes em **uma** chamada com saída estruturada; os marcadores de cada lente são conferidos.
+- `POST /does-it`: veredito `sim`, `nao` ou `parcialmente`, com a funcionalidade da base, a justificativa no tom da lente ativa e as evidências conferidas pelo validador forte.
+- Coerência com a base (`lenses/verdict.py`): o veredito sai do status da funcionalidade; "sim" sem funcionalidade na base exige prova no código; quando há correção, a resposta vem com `adjusted`.
+- Prompts `compare_lenses.md` e `does_it.md`; `PromptBuilder.build_for_lenses`.
+- Abas **Lado a lado** (três colunas com citações) e **Isso faz?** (veredito grande, status em linguagem simples, evidências que abrem o arquivo). As respostas ficam guardadas durante a sessão, então trocar de aba não as apaga.
+
 ### Fase 6 — frontend do MVP
 - Telas: lista de projetos (com o status da API, do banco e da IA no rodapé), novo projeto, material, processamento e projeto com abas.
 - Material: envio de zip, documento ou texto colado, resumo de cada envio (lidos, ignorados por motivo, renomeados), aviso com o que fica fora do limite e remoção de fontes.

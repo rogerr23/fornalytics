@@ -18,9 +18,22 @@ flowchart LR
 
 | Método | Devolve | Uso previsto |
 |---|---|---|
-| `generate(system, messages)` | Texto completo | Visão geral |
-| `stream(system, messages)` | Texto em pedaços | Chat |
-| `generate_json(system, messages, schema)` | Objeto Pydantic validado | Base do produto, "Isso faz?", Ideia × Código |
+| `generate(system, messages)` | Texto completo | (reserva; hoje sem uso) |
+| `stream(system, messages)` | Texto em pedaços | Visão geral e chat |
+| `generate_json(system, messages, schema)` | Objeto Pydantic validado | Base do produto, lado a lado e "Isso faz?" |
+
+## Quanto cada função custa
+
+| Função | Chamadas à IA |
+|---|---|
+| Processar (ideia + código) | 2 (só código ou só documento: 1) |
+| Visão geral | 1 na primeira abertura de cada lente; depois, cache |
+| Chat | 1 por pergunta |
+| Lado a lado | 1 por pergunta (as 3 lentes juntas) |
+| "Isso faz?" | 1 por pergunta |
+| Ideia × Código | 0 (agrupa a base) |
+
+Limites do plano gratuito e o que fazer quando acabam: [`runbook.md`](runbook.md).
 
 ## Configurar o Gemini (principal)
 
