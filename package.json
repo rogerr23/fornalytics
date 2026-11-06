@@ -13,7 +13,8 @@
     "lint:api": "uv --directory backend run ruff check . && uv --directory backend run ruff format --check .",
     "lint:web": "npm --prefix frontend run lint && npm --prefix frontend run format:check",
     "format": "uv --directory backend run ruff format . && uv --directory backend run ruff check --fix . && npm --prefix frontend run format",
-    "migrate": "node -e \"console.log('Disponível a partir da Fase 1.')\""
+    "migrate": "uv --directory backend run alembic upgrade head",
+    "migration:new": "uv --directory backend run alembic revision --autogenerate"
   },
   "devDependencies": {
     "concurrently": "^10.0.6"
