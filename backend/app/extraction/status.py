@@ -5,9 +5,9 @@ import uuid
 from collections.abc import AsyncIterator
 
 from app.db.repositories.projects import ProjectRepository
+from app.db.session import SessionFactory
 from app.domain.enums import ProjectStatus
 from app.domain.projects import Project
-from app.extraction.runner import SessionFactory
 
 POLL_SECONDS = 1.0
 HEARTBEAT_SECONDS = 15.0

@@ -80,8 +80,10 @@ class SourceRepository:
         rows = await self._session.execute(query)
         return [FileRef.model_validate(row._mapping) for row in rows]
 
-    async def files(self, project_id: uuid.UUID) -> list[StoredFile]:
-        """Every stored file of the project, with content (used by the extraction)."""
+    async def files(
+        self, project_id: uuid.UUID, paths: Sequence[str] | None = None
+    ) -> list[StoredFile]:
+        """Stored files of the project, with content; only `paths` when given."""
         query = (
             select(
                 SourceFile.path,
@@ -92,6 +94,8 @@ class SourceRepository:
             .join(Source, SourceFile.source_id == Source.id)
             .where(Source.project_id == project_id)
         )
+        if paths is not None:
+            query = query.where(SourceFile.path.in_(list(paths)))
         rows = await self._session.execute(query)
         return [StoredFile.model_validate(row._mapping) for row in rows]
 

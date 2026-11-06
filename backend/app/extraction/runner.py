@@ -6,19 +6,14 @@ Every step is written to projects.status / status_detail, so reloading the page 
 import asyncio
 import logging
 import uuid
-from collections.abc import Callable
-from contextlib import AbstractAsyncContextManager
-
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import AppError
+from app.db.session import SessionFactory
 from app.extraction.extractor import ProductBaseExtractor
 from app.extraction.service import ProductBaseService
 from app.llm.base import LLMProvider
 
 logger = logging.getLogger(__name__)
-
-SessionFactory = Callable[[], AbstractAsyncContextManager[AsyncSession]]
 
 UNEXPECTED_ERROR = "Erro inesperado ao montar a base. Tente reprocessar."
 

@@ -1,5 +1,7 @@
 """Async engine and session factory."""
 
+from collections.abc import Callable
+from contextlib import AbstractAsyncContextManager
 from functools import lru_cache
 
 from sqlalchemy.ext.asyncio import (
@@ -14,6 +16,9 @@ from app.core.config import get_settings
 from app.core.errors import AppError
 
 ASYNC_DRIVER_PREFIX = "postgresql+psycopg://"
+
+# Opens a short session (work outside the request: background processing, SSE streams).
+SessionFactory = Callable[[], AbstractAsyncContextManager[AsyncSession]]
 
 
 class DatabaseNotConfigured(AppError):
