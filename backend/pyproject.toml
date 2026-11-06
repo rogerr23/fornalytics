@@ -7,6 +7,9 @@ dependencies = [
     "fastapi>=0.162.0",
     "uvicorn[standard]>=0.54.0",
     "pydantic-settings>=2.16.2",
+    "sqlalchemy[asyncio]>=2.1.8",
+    "psycopg[binary]>=3.3.8",
+    "alembic>=1.20.1",
 ]
 
 [dependency-groups]
@@ -14,6 +17,7 @@ dev = [
     "pytest>=9.2.0",
     "httpx>=0.28.1",
     "ruff>=0.17.4",
+    "pytest-asyncio>=1.4.1.post1",
 ]
 
 [tool.uv]
@@ -36,9 +40,15 @@ select = [
 ]
 ignore = ["ANN401"]
 
+[tool.ruff.lint.isort]
+# The local alembic/ folder would otherwise make ruff treat the package as first-party.
+known-third-party = ["alembic"]
+
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["ANN"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"

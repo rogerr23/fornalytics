@@ -1,5 +1,8 @@
 """FastAPI application factory."""
 
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -8,15 +11,24 @@ from app.api.routers import health
 from app.core.config import Settings, get_settings
 from app.core.errors import AppError, app_error_handler
 from app.core.logging import setup_logging
+from app.db.session import get_engine
 
 API_PREFIX = "/api"
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+    yield
+    # Close pooled connections on shutdown, if the engine was ever created.
+    if get_engine.cache_info().currsize:
+        await get_engine().dispose()
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or get_settings()
     setup_logging()
 
-    app = FastAPI(title="Fornalytics API", version=__version__)
+    app = FastAPI(title="Fornalytics API", version=__version__, lifespan=lifespan)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origin_list,
