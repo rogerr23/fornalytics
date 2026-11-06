@@ -189,3 +189,63 @@ async def test_lenses_need_a_processed_project(api: httpx.AsyncClient, use_provi
     assert overview.status_code == 409
     assert chat.status_code == 409
     assert unknown.status_code == 404
+
+
+async def test_compare_answers_in_three_lenses_with_one_call(
+    api: httpx.AsyncClient, db_session: AsyncSession, use_provider
+) -> None:
+    provider = use_provider(
+        [
+            '{"cliente": "Você adiciona itens.", "nao_tecnico": "O carrinho guarda os itens.",'
+            ' "tecnico": "Rota em [[src/routes/cart.py:L1-L2]] e [[src/x.py:L1]]."}'
+        ]
+    )
+    project_id = await project_with_base(api, db_session)
+
+    response = await api.post(
+        f"/projects/{project_id}/compare-lenses", json={"question": "Como funciona o carrinho?"}
+    )
+
+    body = response.json()
+    assert response.status_code == 200
+    assert [a["lens"] for a in body["answers"]] == ["cliente", "nao_tecnico", "tecnico"]
+    assert [c["valid"] for c in body["answers"][2]["citations"]] == [True, False]
+    assert len(provider.calls) == 1
+    assert all(f"Lente: {n}" in provider.calls[0].system for n in ("cliente", "técnico"))
+
+
+async def test_does_it_verdict_follows_the_base(
+    api: httpx.AsyncClient, db_session: AsyncSession, use_provider
+) -> None:
+    use_provider(
+        [
+            '{"verdict": "nao", "feature_name": "Carrinho", "justification": "Não faz.",'
+            ' "evidence": []}'
+        ]
+    )
+    project_id = await project_with_base(api, db_session)
+
+    response = await api.post(
+        f"/projects/{project_id}/does-it",
+        json={"question": "Tem carrinho?", "lens": "nao_tecnico"},
+    )
+
+    body = response.json()
+    assert body["verdict"] == "sim"
+    assert body["adjusted"] is True
+    assert body["feature"] == {"name": "Carrinho", "status": "implemented"}
+    assert [e["path"] for e in body["evidence"]] == ["src/routes/cart.py"]
+
+
+async def test_one_shot_questions_need_a_processed_project(
+    api: httpx.AsyncClient, use_provider
+) -> None:
+    use_provider([])
+    project_id = (await api.post("/projects", json={"name": "Sem base"})).json()["id"]
+
+    compare = await api.post(f"/projects/{project_id}/compare-lenses", json={"question": "Oi?"})
+    does_it = await api.post(
+        f"/projects/{project_id}/does-it", json={"question": "Faz?", "lens": "cliente"}
+    )
+
+    assert (compare.status_code, does_it.status_code) == (409, 409)
