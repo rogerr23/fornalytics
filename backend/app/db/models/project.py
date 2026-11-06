@@ -1,4 +1,4 @@
-from sqlalchemy import String, Text
+from sqlalchemy import String, Text, false
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base, CreatedAt, UUIDPrimaryKey, text_enum
@@ -13,3 +13,5 @@ class Project(UUIDPrimaryKey, CreatedAt, Base):
         text_enum(ProjectStatus, "project_status"), default=ProjectStatus.DRAFT
     )
     status_detail: Mapped[str | None] = mapped_column(Text)
+    # Sources changed after the last product base was built (see docs/data-model.md).
+    base_outdated: Mapped[bool] = mapped_column(default=False, server_default=false())
