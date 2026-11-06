@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { EMPTY_ANSWER, reduceAnswer, toLensEvent, type LensEvent } from './lens'
+import { EMPTY_ANSWER, evidenceToCitation, reduceAnswer, toLensEvent, type LensEvent } from './lens'
 
 describe('reduceAnswer', () => {
   it('builds the answer from the event sequence', () => {
@@ -39,6 +39,27 @@ describe('reduceAnswer', () => {
     expect(toLensEvent({ event: 'delta', data: '{"text":"a"}' })).toEqual({
       type: 'delta',
       text: 'a',
+    })
+  })
+})
+
+describe('evidenceToCitation', () => {
+  it('turns checked evidence into an openable citation', () => {
+    const citation = evidenceToCitation({
+      source_type: 'code',
+      path: 'src/coupon.py',
+      line_start: 3,
+      line_end: 9,
+      quote: 'def apply_coupon',
+    })
+
+    expect(citation).toEqual({
+      marker: '[[src/coupon.py:L3-L9]]',
+      path: 'src/coupon.py',
+      line_start: 3,
+      line_end: 9,
+      valid: true,
+      problem: null,
     })
   })
 })
