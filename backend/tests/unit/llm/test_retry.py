@@ -79,3 +79,15 @@ async def test_stream_does_not_retry_after_text_was_sent() -> None:
             received.append(chunk)
     assert received == ["começo "]
     assert sleep.delays == []
+
+
+@pytest.mark.parametrize(
+    ("retry_after", "expected"),
+    [
+        (30, "Tente de novo em 30 segundos."),
+        (300, "Tente de novo em 5 minutos."),
+        (52323, "limite diário do plano gratuito: tente de novo em cerca de 15 horas."),
+    ],
+)
+def test_quota_message_shows_a_readable_wait(retry_after: float, expected: str) -> None:
+    assert QuotaExceeded(retry_after).message.endswith(expected)
