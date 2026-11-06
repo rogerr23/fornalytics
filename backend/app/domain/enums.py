@@ -30,3 +30,12 @@ class CacheKind(StrEnum):
 class MessageRole(StrEnum):
     USER = "user"
     ASSISTANT = "assistant"
+
+
+class FeatureStatus(StrEnum):
+    """Where a feature stands between the idea and the code (Ideia × Código columns)."""
+
+    IMPLEMENTED = "implemented"
+    PARTIAL = "partial"
+    DOCUMENTED_ONLY = "documented_only"
+    UNDOCUMENTED = "undocumented"
