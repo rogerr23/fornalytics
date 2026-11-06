@@ -8,7 +8,7 @@ A tabela completa (o que vai em cada doc e quando atualizar) está na seção 14
 | [devlog.md](devlog.md) | Ativo |
 | [adr/](adr/) | Ativo (modelo em `0000-template.md`; [0001 — camadas](adr/0001-arquitetura-em-camadas.md)) |
 | [architecture.md](architecture.md) | Ativo |
-| data-model.md | A criar na Fase 1 |
+| [data-model.md](data-model.md) | Ativo |
 | llm.md | A criar na Fase 2 |
 | ingestion.md | A criar na Fase 3 |
 | api-events.md | A criar na Fase 4 |

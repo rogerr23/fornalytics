@@ -45,16 +45,17 @@ Crie o `.env` a partir do exemplo:
 - macOS / Linux: `cp .env.example .env`
 - Windows (PowerShell): `Copy-Item .env.example .env`
 
-Instale tudo e suba o projeto:
+Configure o banco (veja [Banco de dados](#banco-de-dados-neon) abaixo), depois instale tudo, crie as tabelas e suba o projeto:
 
 ```bash
 npm run setup
+npm run migrate
 npm run dev
 ```
 
 | Endereço | O que é |
 |---|---|
-| http://localhost:5173 | Aplicação |
+| http://localhost:5173 | Aplicação (mostra se backend e banco estão ok) |
 | http://localhost:8000/api/health | Saúde da API |
 | http://localhost:8000/docs | Documentação interativa da API |
 
@@ -73,7 +74,23 @@ Todos rodam a partir da raiz do projeto.
 | `npm test` | Roda os testes |
 | `npm run lint` | Confere lint e formatação (backend e frontend) |
 | `npm run format` | Formata o código |
-| `npm run migrate` | Aplica as migrações do banco (a partir da Fase 1) |
+| `npm run migrate` | Aplica as migrações do banco |
+| `npm run migration:new -- -m "descricao"` | Gera uma migração nova a partir dos models |
+
+---
+
+## Banco de dados (Neon)
+
+O banco é um PostgreSQL gratuito no [Neon](https://neon.tech). Cada pessoa pode usar o mesmo projeto do Neon (dados compartilhados) ou criar o seu.
+
+1. Crie uma conta e um projeto no Neon (região **AWS São Paulo**). Quando perguntar por serviços extras, escolha **Just Postgres**.
+2. No painel do projeto, clique em **Connect** e copie duas strings:
+   - com **Connection pooling** ligado (endereço com `-pooler`) → `DATABASE_URL`;
+   - com **Connection pooling** desligado → `DATABASE_URL_DIRECT`.
+3. Em **Branches**, crie um branch `test` a partir do `production`, com **Auto-delete: Never**. No **Connect**, escolha esse branch e copie a string pooled → `TEST_DATABASE_URL`.
+4. Cole as três no `.env` como vieram do Neon e rode `npm run migrate`.
+
+Sem `TEST_DATABASE_URL`, os testes de banco são pulados. Detalhes das tabelas em [`docs/data-model.md`](docs/data-model.md).
 
 ---
 
@@ -93,6 +110,6 @@ Detalhes das camadas e das regras de código em [`docs/architecture.md`](docs/ar
 
 ## Variáveis de ambiente
 
-Todas estão listadas e comentadas em [`.env.example`](.env.example). Na Fase 0 nenhuma é obrigatória.
+Todas estão listadas e comentadas em [`.env.example`](.env.example). Hoje só as do banco são necessárias; sem elas a API sobe, mas mostra "Banco: não configurado".
 
 > O `.env` nunca vai para o Git.

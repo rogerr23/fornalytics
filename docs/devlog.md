@@ -29,3 +29,10 @@ Uma entrada por sessão de trabalho: o que foi pedido, o que saiu, o que preciso
 - **Correções no caminho:** o modelo atual do Vite trocou o ESLint pelo `oxlint` e veio com TypeScript 7, que o `typescript-eslint` ainda não suporta. Mantido o ESLint (padrão do projeto) com TypeScript fixado em 6.0.
 - **Fechamento (2026-11-06):** `uv` instalado via Homebrew; `npm run setup` gerou o `backend/uv.lock`; `npm test`, `npm run lint` e `npm run dev` conferidos pelo fluxo oficial. Fase 0 concluída.
 - **Observação:** `npm audit` aponta 10 vulnerabilidades moderadas no `minimatch`, usado só pelo ESLint em desenvolvimento (não vai para a aplicação). A correção automática rebaixaria o ESLint; acompanhar uma atualização do ESLint.
+
+## 2026-11-06 — Fase 1 (banco de dados)
+
+- **Pedido:** conectar o Neon, criar as tabelas e a primeira migração.
+- **Resultado:** 8 tabelas criadas no Neon pela migração inicial; health e página inicial mostram "Banco: ok"; testes de banco rodam no branch `test` com rollback (nenhum dado fica) e são pulados sem a URL.
+- **Ajustes no caminho:** o Neon perguntou por serviços extras (escolhido "Just Postgres") e o branch `test` vinha com apagamento automático para o dia seguinte (trocado para nunca). Na revisão da migração, o nome da restrição única composta foi corrigido e o ruff foi configurado para reconhecer o pacote `alembic`.
+- **Observação:** o FastAPI avisa nos testes que prefere `httpx2` ao `httpx`; é só aviso.

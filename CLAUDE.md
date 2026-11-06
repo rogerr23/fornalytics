@@ -126,7 +126,9 @@ Quando houver documento da ideia **e** código, extrair as funcionalidades de ca
   - `conversations` (id, project_id, created_at) e `messages` (id, conversation_id, lens, role, content, citations JSONB, created_at)
   - `comparisons` (id, project_id, product_base_id, data JSONB, created_at), resultado do Ideia × Código
 - **Invalidação de cache:** ao reprocessar um projeto, apagar `lens_cache` e `comparisons` dele na mesma transação que grava a nova base. Sem versionamento de bases (histórico está em "futuro").
-- Toda mudança de esquema vira uma migração Alembic. Nunca alterar tabela manualmente.
+- Ids em **UUID**. Campos com valores fixos (`status`, `lens`, `type`, `role`, `kind`) são **texto + CHECK**, não `ENUM` nativo; os valores ficam em `app/domain/enums.py`.
+- `product_bases` e `comparisons` têm **uma linha por projeto** (`project_id` único).
+- Toda mudança de esquema vira uma migração Alembic. Nunca alterar tabela manualmente. Detalhes em `docs/data-model.md`.
 
 ---
 
@@ -336,7 +338,7 @@ frontend/src/
 Marque `[x]` ao concluir cada item e atualize esta lista no mesmo commit.
 
 - [x] **Fase 0, base do projeto:** estrutura de pastas, `uv` + FastAPI com `/api/health`, Vite + React, `.env.example`, `.gitignore`, `.gitattributes`, `package.json` da raiz com os scripts, `README.md`, ruff/ESLint/Prettier configurados, `docs/architecture.md` e `CHANGELOG.md`
-- [ ] **Fase 1, banco:** conexão com o Neon, models, primeira migração Alembic
+- [x] **Fase 1, banco:** conexão com o Neon, models, primeira migração Alembic
 - [ ] **Fase 2, provedor de IA:** `LLMProvider`, `GeminiProvider`, `OllamaProvider`, tratamento de 429
 - [ ] **Fase 3, ingestão:** upload, extração de texto, filtros, linhas numeradas, estimativa de tokens
 - [ ] **Fase 4, base do produto:** extração estruturada, validação de citações, progresso por SSE
@@ -409,6 +411,9 @@ Marque `[x]` ao concluir cada item e atualize esta lista no mesmo commit.
 | 2026-11-05 | Modelos simples (enums, listas, objetos) na saída estruturada | Compatível com o subconjunto de JSON Schema do Gemini e mais fácil para o Ollama |
 | 2026-11-05 | Scripts npm na raiz (`npm run setup/dev/test/lint/migrate`) em vez de Makefile; suporte a Windows obrigatório | Haverá pessoas usando Windows, onde o Make não vem instalado; o Node já é pré-requisito |
 | 2026-11-05 | Frontend com ESLint (não o `oxlint` que o modelo novo do Vite traz) e TypeScript fixado em `~6.0` | Seguir o padrão definido; o `typescript-eslint` ainda não suporta o TypeScript 7. Rever quando suportar |
+| 2026-11-06 | Ids UUID e valores fixos como texto + CHECK (não `ENUM` nativo) | UUID não expõe contagem e pode ser gerado antes de gravar; acrescentar valor vira migração simples |
+| 2026-11-06 | `product_bases` e `comparisons` com uma linha por projeto | Sem versionamento (decisão de 05/11); reprocessar substitui |
+| 2026-11-06 | `/api/health` informa o banco, mas a API sobe sem ele | Quem só quer ver a interface não precisa configurar o Neon |
 
 ---
 

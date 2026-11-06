@@ -4,6 +4,14 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 
 ## [Não lançado]
 
+### Fase 1 — banco de dados
+- Conexão assíncrona com PostgreSQL (SQLAlchemy 2 + psycopg 3), compatível com a conexão pooled do Neon.
+- 8 tabelas com ids UUID, datas com fuso, exclusão em cascata e valores fixos validados no banco.
+- Alembic assíncrono com a migração inicial; scripts `npm run migrate` e `npm run migration:new`.
+- `/api/health` informa o estado do banco; a página inicial mostra "Banco: ok".
+- Testes de integração no branch `test` do Neon, com rollback e pulados quando não configurados.
+- `docs/data-model.md` e seção de configuração do Neon no README.
+
 ### Fase 0 — base do projeto
 - Comandos do projeto como scripts npm na raiz (`setup`, `dev`, `test`, `lint`, `format`, `migrate`), funcionando em Windows, macOS e Linux.
 - Backend FastAPI gerenciado com `uv`: `create_app()`, configurações via `pydantic-settings`, erro de domínio com handler único, logging e `GET /api/health`.
