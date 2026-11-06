@@ -55,3 +55,11 @@ O formato dos marcadores (`[[caminho:L10-L20]]`) fica nas tarefas (`overview.md`
 **O backend não depende do prompt para a coerência:** `lenses/verdict.py` refaz o veredito a partir da base e descarta evidências que não conferem.
 
 **Teste real: pendente.** A cota diária do `gemini-3.5-flash` acabou na Fase 6. O `gemini-3.7-flash` deu 503 e 504 seguidos, e o `gemini-3.6-flash` respondeu ao `llm:check`, mas esgotou o limite diário na etapa 2 do processamento. As telas foram conferidas com respostas simuladas. Quando a cota voltar, rodar: processar o projeto de teste, uma pergunta no lado a lado e "O sistema gera nota fiscal?" no "Isso faz?".
+
+## v4 (2026-11-06), Fase 9: fluxos
+
+| Arquivo | Papel |
+|---|---|
+| `flow.md` | Passo a passo (3 a 10 passos, no tom da lente) e o diagrama como nós (até 12, rótulos de até 6 palavras) e arestas (rótulo vazio ou uma condição curta). Proíbe escrever Mermaid; ramificação só quando o material mostra a decisão; "não encontrei no material" com listas vazias |
+
+O backend corta o resultado nos mesmos limites, confere as evidências dos passos e monta o Mermaid. **Teste real:** pendente, junto com o da Fase 7.

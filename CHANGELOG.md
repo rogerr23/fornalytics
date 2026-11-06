@@ -4,6 +4,13 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 
 ## [Não lançado]
 
+### Fase 9 — fluxos com Mermaid
+- `GET /flows`: os fluxos da base desenhados como sequências, sem chamar a IA.
+- `POST /flow`: "o que acontece quando…?" em uma chamada. O modelo devolve passos, nós e arestas; o backend confere as evidências, aplica os limites (10 passos, 12 nós) e monta o Mermaid.
+- `lenses/mermaid.py`: montagem pura e sempre válida (ids próprios, rótulos escapados e cortados, arestas inválidas descartadas, sequência linear quando não há nós).
+- Aba **Fluxos**: diagrama e passos numerados com evidências clicáveis; sugestões a partir dos fluxos da base; fluxos perguntados guardados durante a sessão.
+- `mermaid` no frontend, carregado sob demanda; se o desenho falhar, aparece o texto do diagrama. Com isso, as seis abas estão ativas.
+
 ### Fase 8 — Ideia × Código
 - `GET /idea-vs-code`: as funcionalidades da base em três colunas (✅ prometido e implementado, ⚠️ prometido e não implementado, 🔍 implementado e não documentado), com os totais. Não chama a IA nem depende do provedor.
 - Estado da comparação (`available`, `missing_idea`, `missing_code`, `no_promises`) lido da própria base, sem migração.

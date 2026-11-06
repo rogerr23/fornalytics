@@ -133,3 +133,13 @@ Uma entrada por sessão de trabalho: o que foi pedido, o que saiu, o que preciso
   - O projeto de teste voltou para rascunho.
 - **Ajuste no caminho:** o ícone da coluna ficou colado no título, porque a formatação automática quebrou a linha do JSX e o espaço sumiu. Separados com `gap`.
 - **Pendente (da Fase 7):** teste real com o Gemini quando a cota voltar.
+
+## 2026-11-06 — Fase 9 (fluxos com Mermaid)
+
+- **Pedido:** explicar a Fase 9 e executá-la com as recomendações (`GET /flows` sem IA, lente ativa no fluxo perguntado, sem gravar, limites de tamanho).
+- **Resultado:** 124 testes no backend (os de montagem do Mermaid conferem cada linha gerada contra o formato esperado) e 15 no frontend. As seis abas estão ativas. Na tela, com uma base manual e uma resposta simulada:
+  - os fluxos da base aparecem desenhados sem IA;
+  - o fluxo perguntado mostra a ramificação "sim/não", o rótulo com aspas escapado certo e evidências clicáveis;
+  - o `mermaid` carrega só quando a aba abre, em pacotes separados.
+- **Ajuste no caminho:** quando o Mermaid não consegue desenhar, ele deixa um bloco de erro solto no fim da página. O componente agora o remove ao mostrar o texto do diagrama no lugar.
+- **Pendente:** teste real das Fases 7 e 9 quando a cota voltar.

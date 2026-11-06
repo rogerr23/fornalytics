@@ -32,6 +32,8 @@ flowchart LR
 | Lado a lado | 1 por pergunta (as 3 lentes juntas) |
 | "Isso faz?" | 1 por pergunta |
 | Ideia × Código | 0 (agrupa a base) |
+| Fluxos da base | 0 (desenhados a partir da base) |
+| Fluxo perguntado | 1 por pergunta |
 
 Limites do plano gratuito e o que fazer quando acabam: [`runbook.md`](runbook.md).
 

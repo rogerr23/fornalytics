@@ -136,6 +136,7 @@ Com `npm run dev` rodando, abra http://localhost:5173:
    - **Lado a lado:** a mesma pergunta respondida nas três lentes ao mesmo tempo.
    - **Isso faz?:** Sim, Não ou Parcialmente, com a justificativa e as evidências.
    - **Ideia × Código:** o que foi prometido e implementado, o que foi prometido e não existe no código e o que existe sem estar documentado (sem chamar a IA).
+   - **Fluxos:** os fluxos da base já aparecem desenhados; pergunte "o que acontece quando…?" para ver o passo a passo com diagrama.
    - Citações válidas abrem o trecho do arquivo; as que não conferem aparecem como "não verificada".
 5. Se o material mudar depois do processamento, aparece o aviso **O material mudou** com o botão **Reprocessar**.
 

@@ -107,6 +107,26 @@ O **estado da comparação** sai da própria base, sem coluna nova no banco:
 
 A aba é igual nas três lentes: mostra o texto da base, sem reescrever. O "Isso faz?" lê o mesmo status.
 
+## Fluxos (Fase 9)
+
+```mermaid
+flowchart LR
+    Q[Pergunta + lente] --> IA[IA: FlowDraft<br/>passos, nós, arestas]
+    IA --> V[Valida as evidências<br/>dos passos]
+    V --> M[lenses/mermaid.py<br/>monta o flowchart TD]
+    B[(Base: flows)] -->|sem IA| L[linear_mermaid]
+    M --> F[MermaidDiagram<br/>carregado sob demanda]
+    L --> F
+```
+
+- **O modelo nunca escreve Mermaid.** `build_mermaid` (função pura):
+  - usa os ids `n1`, `n2`… em vez dos ids do modelo;
+  - põe os rótulos entre aspas, com `#`, `"`, `<` e `>` escapados e corte em 60 caracteres;
+  - descarta nós repetidos e arestas para nós inexistentes;
+  - sem nós, monta uma sequência linear a partir dos passos.
+- `GET /flows` desenha os fluxos que a base já tem, sem IA nem provedor. `POST /flow` faz uma chamada e limita o resultado a 10 passos e 12 nós.
+- No frontend, o `mermaid` só é carregado quando a aba Fluxos abre (`import()` dinâmico, modo `strict`). Se o desenho falhar, a tela mostra o texto do diagrama e remove o bloco de erro que o Mermaid deixa na página.
+
 ## Frontend
 
 - `app/`: rotas, layout e providers (TanStack Query e lente ativa).
@@ -122,7 +142,7 @@ A aba é igual nas três lentes: mostra o texto da base, sem reescrever. O "Isso
 | `/` | `ProjectsPage` | `projects`, `health` |
 | `/projects/new` e `/projects/:id/material` | `NewProjectPage` | `projects`, `upload`, `processing` |
 | `/projects/:id/processing` | `ProcessingPage` | `processing` |
-| `/projects/:id?tab=overview\|chat\|compare\|does-it\|idea-vs-code` | `ProjectPage` | `lens`, `overview`, `chat`, `compare`, `does-it`, `idea-vs-code`, `citations`, `processing` |
+| `/projects/:id?tab=overview\|chat\|compare\|does-it\|idea-vs-code\|flows` | `ProjectPage` | `lens`, `overview`, `chat`, `compare`, `does-it`, `idea-vs-code`, `flows`, `citations`, `processing` |
 
 ### Streaming
 
@@ -162,4 +182,4 @@ flowchart LR
 | Telas do MVP: projetos, material com resumo da ingestão, progresso por SSE, projeto com seletor de lente, visão geral, chat e visualizador de citações | ✅ | 6 |
 | Lado a lado (uma chamada para as 3 lentes) e "Isso faz?" com veredito coerente com a base | ✅ | 7 |
 | Ideia × Código: agrupa a base por status, sem IA, com o estado da comparação | ✅ | 8 |
-| Fluxo (JSON → Mermaid montado no backend) | ⏳ | 9 |
+| Fluxos: os da base sem IA e o perguntado com uma chamada; o Mermaid é sempre montado no backend | ✅ | 9 |
