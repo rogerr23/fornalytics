@@ -4,6 +4,16 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 
 ## [Não lançado]
 
+### Fase 4 — base do produto
+- Modelos `ProductBase`, `Evidence`, `Promise` e `FeatureStatus`, que servem também de schema da saída estruturada.
+- Extração em duas etapas (promessas da ideia → base do código); só código ou só documento usam uma chamada.
+- Reconciliação sem IA: uma feature por promessa, promessa esquecida vira `documented_only`, referência desconhecida vira `undocumented`.
+- Validação de citações (arquivo, linhas e trecho curto ignorando espaços); as inválidas são descartadas da base.
+- Prompts `base.md`, `extraction_idea.md`, `extraction.md` e o `PromptBuilder`.
+- `POST /process` (202, em segundo plano; 409 se já estiver processando; 422 sem fontes), `GET /status` (SSE) e `GET /base`.
+- Gravação da base, limpeza do cache e `base_outdated = false` numa transação; projetos presos em `processing` viram `failed` ao subir o servidor.
+- `docs/api-events.md`, `docs/prompts.md` e o formato do JSONB em `docs/data-model.md`.
+
 ### Fase 3 — ingestão
 - Migração: remove `comparisons` e adiciona `projects.base_outdated` (ADR 0002).
 - Rotas de projetos (`POST/GET /projects`, `GET /projects/{id}`) e de fontes (`POST/GET /sources`, `DELETE /sources/{id}`, `GET /files?path=`), com os primeiros repositórios e serviços.

@@ -95,9 +95,47 @@ Guardados como texto, com uma regra (`CHECK`) no banco que recusa qualquer outro
 - **Ids** são UUID gerados pela aplicação.
 - **Datas** com fuso horário, preenchidas pelo banco (`now()`).
 - **Apagar um projeto apaga tudo que pertence a ele** (`ON DELETE CASCADE` em todas as chaves estrangeiras).
-- **Reprocessar um projeto** apaga o `lens_cache` dele e zera `base_outdated` na mesma transação que grava a nova base (Fase 4).
+- **Reprocessar um projeto** grava a nova base, apaga o `lens_cache` dele, zera `base_outdated` e marca `ready` na mesma transação (`extraction/service.py`).
+- **`projects.status`** vai para `processing` por um `UPDATE` condicional (dois cliques não iniciam dois processamentos). Ao subir o servidor, projetos presos em `processing` viram `failed`.
 - **Adicionar ou remover uma fonte** de um projeto que já tem base marca `base_outdated = true`; a base anterior continua valendo até o reprocessamento.
-- O formato dos campos `jsonb` é definido pelos modelos Pydantic de `app/domain/` (Fase 4 em diante).
+- O formato dos campos `jsonb` é definido pelos modelos Pydantic de `app/domain/`.
+
+## Formato de `product_bases.data`
+
+Definido em `app/domain/product_base.py`. Os mesmos modelos são o `schema` da saída estruturada do Gemini, por isso só usam tipos simples (texto, número, enum, lista, objeto).
+
+```json
+{
+  "summary": "2 a 4 frases sobre o produto",
+  "stack": ["Python 3.12", "FastAPI"],
+  "entities": ["Projeto", "Fonte"],
+  "integrations": ["Gemini"],
+  "features": [
+    {
+      "name": "Cupom de desconto",
+      "description": "…",
+      "status": "implemented | partial | documented_only | undocumented",
+      "promise_ref": "P2",
+      "evidence": [
+        {
+          "source_type": "code | idea_doc | transcript | text",
+          "path": "src/routes/cart.py",
+          "line_start": 10,
+          "line_end": 14,
+          "quote": "trecho curto (até ~120 caracteres)"
+        }
+      ]
+    }
+  ],
+  "flows": [{ "name": "Comprar", "steps": ["…"], "evidence": [] }],
+  "business_rules": [{ "rule": "…", "evidence": [] }]
+}
+```
+
+- `promise_ref` é o id da promessa do documento da ideia (`P1`, `P2`…) que a feature responde, ou `""` quando não foi prometida (`undocumented`) ou não há documento.
+- As features vêm primeiro na ordem das promessas e depois as não documentadas.
+- **Toda evidência gravada foi conferida** (`citations/validator.py`): o arquivo existe, as linhas existem e o trecho aparece dentro delas. As inválidas são descartadas antes de gravar, e o `status_detail` final informa quantas foram.
+- `source_type` e `path` da evidência são corrigidos pelo backend a partir do arquivo real (não confiamos no modelo para isso).
 
 ## Conexões
 

@@ -11,8 +11,8 @@ A tabela completa (o que vai em cada doc e quando atualizar) está na seção 14
 | [data-model.md](data-model.md) | Ativo |
 | [llm.md](llm.md) | Ativo |
 | [ingestion.md](ingestion.md) | Ativo |
-| api-events.md | A criar na Fase 4 |
-| prompts.md | A criar na Fase 5 |
+| [api-events.md](api-events.md) | Ativo |
+| [prompts.md](prompts.md) | Ativo |
 | runbook.md | A criar no primeiro problema recorrente |
 | demo-script.md | A criar na Fase 10 |
 | evals/ | A criar na Fase 11 |

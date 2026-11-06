@@ -63,3 +63,14 @@ Uma entrada por sessão de trabalho: o que foi pedido, o que saiu, o que preciso
 - **Decisões dos pontos em aberto:** limite por etapa (documentos e código) com padrão de 200 mil tokens; `.env` de dentro do zip ignorado; caminho repetido ganha sufixo.
 - **Ajuste no caminho:** quando nenhum arquivo do zip é aproveitável, a mensagem agora diz o motivo de cada ignorado (ex.: "1 caminho inseguro").
 - **Observação:** os arquivos de exemplo dos testes (zip, PDF, DOCX) são gerados em memória; o PDF é montado à mão, sem biblioteca extra.
+
+## 2026-11-06 — Fase 4 (base do produto)
+
+- **Pedido:** explicar a Fase 4 e executá-la, com commits separados por parte.
+- **Resultado:** 76 testes (67 de unidade, sem rede). Teste real no Gemini com o próprio Fornalytics (106 arquivos de código e o documento de produto como ideia): 2 chamadas em cerca de 1min35s, SSE mostrando as etapas, 26 funcionalidades e **nenhuma citação descartada**. O projeto de teste foi apagado do banco principal em seguida.
+- **Decisões aprovadas:** citação inválida é descartada da base; material só de documento usa uma chamada; teste real no fim da fase.
+- **Ajuste no caminho:** o teste de unidade pegou um erro na renumeração das promessas (uma promessa sem nome fazia pular um número, P1 → P3).
+- **Observações:**
+  - o documento de produto entrou como `fornalytics-projeto (2).md`, porque o zip já tinha um arquivo com esse nome (sufixo da Fase 3, funcionando como esperado);
+  - as ideias "futuras" do documento viraram promessas `documented_only` (anotado em `docs/prompts.md` para a Fase 11);
+  - o limite de 200 mil tokens por etapa ainda não foi testado num repositório desse tamanho: o teste usou cerca de 56 mil.

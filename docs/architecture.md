@@ -34,6 +34,30 @@ flowchart TD
 - Erros esperados são `AppError` (`core/errors.py`), convertidos em HTTP num handler único.
 - Só `core/config.py` lê variáveis de ambiente.
 
+## Processamento da base (Fase 4)
+
+```mermaid
+sequenceDiagram
+    participant F as Frontend
+    participant API as POST /process
+    participant R as ProcessingRunner (tarefa em segundo plano)
+    participant IA as LLMProvider
+    participant DB as Banco
+    F->>API: processar
+    API->>DB: status = processing (UPDATE condicional)
+    API-->>F: 202
+    API->>R: submit(projeto)
+    F->>DB: GET /status (SSE, lê o status a cada 1s)
+    R->>IA: etapa a: promessas (se houver documento)
+    R->>IA: etapa b: base (recebe as promessas)
+    R->>R: reconcilia status e confere citações
+    R->>DB: base + limpa lens_cache + ready (uma transação)
+    DB-->>F: evento status: ready
+```
+
+- `extraction/extractor.py` fala com a IA e não toca o banco; `extraction/reconcile.py` é puro; `extraction/service.py` grava; `extraction/runner.py` cuida da tarefa e dos erros.
+- Material só de código ou só de documento usa **uma** chamada; ideia + código usa duas.
+
 ## Frontend
 
 - `app/`: rotas e providers (TanStack Query).
@@ -52,7 +76,7 @@ flowchart TD
 | Banco: sessão assíncrona, 8 tabelas, migração inicial, status no health | ✅ | 1 |
 | Provedores de IA (Gemini, Ollama, Fake) com novas tentativas | ✅ | 2 |
 | Projetos (criar, listar, detalhar) e ingestão no envio: extratores, filtros, limites, corte por prioridade | ✅ | 3 |
-| Base do produto e citações | ⏳ | 4 |
+| Base do produto: extração em duas etapas, reconciliação, validação de citações, processamento em segundo plano e status por SSE | ✅ | 4 |
 | Lentes (visão geral e chat) | ⏳ | 5 |
 | Telas do MVP | ⏳ | 6 |
 | Lado a lado e "Isso faz?" | ⏳ | 7 |

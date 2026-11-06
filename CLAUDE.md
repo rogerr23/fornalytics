@@ -368,7 +368,7 @@ Marque `[x]` ao concluir cada item e atualize esta lista no mesmo commit.
 - [x] **Fase 1, banco:** conexão com o Neon, models, primeira migração Alembic
 - [x] **Fase 2, provedor de IA:** `LLMProvider`, `GeminiProvider`, `OllamaProvider`, tratamento de 429
 - [x] **Fase 3, ingestão:** migração (remove `comparisons`, adiciona `projects.base_outdated`), criação de projeto, upload com ingestão na hora e resumo, remoção de fonte, extração de texto, filtros, linhas numeradas, estimativa de tokens e corte por prioridade
-- [ ] **Fase 4, base do produto:** extração em duas etapas (promessas da ideia → base do código com status), validação de citações com trecho curto, processamento em segundo plano e progresso por SSE
+- [x] **Fase 4, base do produto:** extração em duas etapas (promessas da ideia → base do código com status), validação de citações com trecho curto, processamento em segundo plano e progresso por SSE
 - [ ] **Fase 5, MVP de lentes:** visão geral por lente (com cache) e chat com streaming
 - [ ] **Fase 6, frontend do MVP:** upload, processamento, seletor de lente, visão geral e chat
 - [ ] **Fase 7, lado a lado (uma chamada para as 3 lentes) e "Isso faz?"**
@@ -458,6 +458,11 @@ Marque `[x]` ao concluir cada item e atualize esta lista no mesmo commit.
 | 2026-11-06 | Caminho repetido no projeto ganha sufixo (`README (2).md`) | Cada citação aponta para um único arquivo |
 | 2026-11-06 | Zip é sempre `code`; documentos são `idea_doc` ou `transcript`; texto colado é `text` ou `transcript` | Regras simples, validadas no envio |
 | 2026-11-06 | Texto extraído em thread separada (`asyncio.to_thread`); arquivos de exemplo dos testes gerados em memória | Não travar o servidor ao ler PDF/zip; nenhum binário no repositório |
+| 2026-11-06 | Citação inválida é **descartada** da base (não guardada como `unverified`); o `status_detail` final informa quantas foram | A base é a verdade que todas as abas leem; no chat (Fase 5) a citação inválida aparece com o selo "não verificada" |
+| 2026-11-06 | Material só de documento usa **uma** chamada (etapa b direto sobre o documento, tudo `documented_only`) | Economizar cota: a etapa (a) não acrescentaria nada |
+| 2026-11-06 | Cada feature traz `promise_ref`, e o backend reconcilia o status (uma feature por promessa) | Não depender do modelo para a coerência do Ideia × Código; nenhuma promessa some |
+| 2026-11-06 | Status do processamento por SSE lendo o banco a cada 1s, com sessão curta por leitura | Recarregar a página não perde nada; nenhuma conexão fica presa enquanto espera |
+| 2026-11-06 | Extração com ~56 mil tokens de código passou sem 429 no `gemini-3.5-flash` | Primeiro teste real; o limite de 200 mil por etapa segue sem teste num repositório desse tamanho |
 
 ---
 
