@@ -86,6 +86,27 @@ sequenceDiagram
   - É o mesmo status que o Ideia × Código agrupa, então as duas abas nunca se contradizem.
 - Os resultados não ficam salvos: o histórico existe só na tela, enquanto ela estiver aberta.
 
+## Ideia × Código (Fase 8)
+
+`GET /projects/{id}/idea-vs-code` (`lenses/idea_vs_code.py`) não chama a IA e não depende do provedor: funciona até sem `GEMINI_API_KEY`.
+
+| Coluna | Status na base |
+|---|---|
+| ✅ Prometido e implementado | `implemented` e `partial` (o parcial aparece com o selo "em parte") |
+| ⚠️ Prometido e não implementado | `documented_only` |
+| 🔍 Implementado e não documentado | `undocumented` |
+
+O **estado da comparação** sai da própria base, sem coluna nova no banco:
+
+| Estado | Quando | O que a tela mostra |
+|---|---|---|
+| `available` | Alguma feature tem `promise_ref` (houve documento e código) | As três colunas e o resumo ("3 de 5 promessas entregues (1 em parte)") |
+| `missing_code` | Todas as features são `documented_only` | Tudo em ⚠️ e um pedido para enviar o código |
+| `missing_idea` | Sem promessas e sem documento entre as fontes | Tudo em 🔍 e um pedido para enviar o documento |
+| `no_promises` | Há documento, mas ele não trouxe promessas | Tudo em 🔍 e um aviso para conferir o documento |
+
+A aba é igual nas três lentes: mostra o texto da base, sem reescrever. O "Isso faz?" lê o mesmo status.
+
 ## Frontend
 
 - `app/`: rotas, layout e providers (TanStack Query e lente ativa).
@@ -101,7 +122,7 @@ sequenceDiagram
 | `/` | `ProjectsPage` | `projects`, `health` |
 | `/projects/new` e `/projects/:id/material` | `NewProjectPage` | `projects`, `upload`, `processing` |
 | `/projects/:id/processing` | `ProcessingPage` | `processing` |
-| `/projects/:id?tab=overview\|chat\|compare\|does-it` | `ProjectPage` | `lens`, `overview`, `chat`, `compare`, `does-it`, `citations`, `processing` |
+| `/projects/:id?tab=overview\|chat\|compare\|does-it\|idea-vs-code` | `ProjectPage` | `lens`, `overview`, `chat`, `compare`, `does-it`, `idea-vs-code`, `citations`, `processing` |
 
 ### Streaming
 
@@ -140,5 +161,5 @@ flowchart LR
 | Lentes: visão geral por lente (cache) e chat com streaming, contexto selecionado e citações por marcador | ✅ | 5 |
 | Telas do MVP: projetos, material com resumo da ingestão, progresso por SSE, projeto com seletor de lente, visão geral, chat e visualizador de citações | ✅ | 6 |
 | Lado a lado (uma chamada para as 3 lentes) e "Isso faz?" com veredito coerente com a base | ✅ | 7 |
-| Ideia × Código (agrupa a base por status) | ⏳ | 8 |
+| Ideia × Código: agrupa a base por status, sem IA, com o estado da comparação | ✅ | 8 |
 | Fluxo (JSON → Mermaid montado no backend) | ⏳ | 9 |

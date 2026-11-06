@@ -4,6 +4,12 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 
 ## [Não lançado]
 
+### Fase 8 — Ideia × Código
+- `GET /idea-vs-code`: as funcionalidades da base em três colunas (✅ prometido e implementado, ⚠️ prometido e não implementado, 🔍 implementado e não documentado), com os totais. Não chama a IA nem depende do provedor.
+- Estado da comparação (`available`, `missing_idea`, `missing_code`, `no_promises`) lido da própria base, sem migração.
+- Aba **Ideia × Código**: resumo ("3 de 5 promessas entregues (1 em parte)"), selo "em parte", evidências que abrem o arquivo e mensagens claras quando falta o documento ou o código.
+- `evidenceToCitation` passa para `shared/api/lens.ts` (usado pelo "Isso faz?" e pelo Ideia × Código).
+
 ### Fase 7 — lado a lado e "Isso faz?"
 - `POST /compare-lenses`: a mesma pergunta nas três lentes em **uma** chamada com saída estruturada; os marcadores de cada lente são conferidos.
 - `POST /does-it`: veredito `sim`, `nao` ou `parcialmente`, com a funcionalidade da base, a justificativa no tom da lente ativa e as evidências conferidas pelo validador forte.

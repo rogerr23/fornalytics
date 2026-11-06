@@ -373,7 +373,7 @@ Marque `[x]` ao concluir cada item e atualize esta lista no mesmo commit.
 - [x] **Fase 5, MVP de lentes:** visão geral por lente (com cache) e chat com streaming
 - [x] **Fase 6, frontend do MVP:** upload, processamento, seletor de lente, visão geral e chat
 - [x] **Fase 7, lado a lado (uma chamada para as 3 lentes) e "Isso faz?"**
-- [ ] **Fase 8, Ideia × Código:** rota `GET` que agrupa a base por status e a tela em três colunas (sem chamada à IA)
+- [x] **Fase 8, Ideia × Código:** rota `GET` que agrupa a base por status e a tela em três colunas (sem chamada à IA)
 - [ ] **Fase 9, fluxo com Mermaid:** modelo devolve passos, nós e arestas; o backend monta o Mermaid
 - [ ] **Fase 10, demo:** app e escopo em `demo/`, rodar o fluxo completo de ponta a ponta
 - [ ] **Fase 11, qualidade:** rodar o conjunto de avaliação, ajustar prompts, acabamento visual, respostas da demo salvas como reserva
@@ -478,6 +478,9 @@ Marque `[x]` ao concluir cada item e atualize esta lista no mesmo commit.
 | 2026-11-06 | Veredito do "Isso faz?" sai do status da base; "sim" sem funcionalidade na base exige evidência válida no código; correções vêm com `adjusted` e justificativa tirada da base | "Isso faz?" e Ideia × Código nunca se contradizem |
 | 2026-11-06 | "Isso faz?" responde na lente ativa (só o tom da justificativa muda); o lado a lado ignora a lente ativa | O veredito é um fato; o lado a lado já mostra as três lentes |
 | 2026-11-06 | Resultados do lado a lado e do "Isso faz?" não são gravados | Sem tabela nova; o plano não pede histórico |
+| 2026-11-06 | Ideia × Código igual em todas as lentes (texto da base, sem reescrever) | Reescrever por lente exigiria chamar a IA, contra a decisão de zero chamadas (ADR 0002) |
+| 2026-11-06 | Estado da comparação lido da base (`promise_ref`, status) e das fontes, sem coluna nova | Sem migração; a tela explica quando falta o documento ou o código |
+| 2026-11-06 | Parcial na coluna ✅ com selo "em parte", contado à parte no resumo | Segue a seção 7 sem inflar o que foi entregue |
 | 2026-11-06 | Extração com ~56 mil tokens de código passou sem 429 no `gemini-3.5-flash` | Primeiro teste real; o limite de 200 mil por etapa segue sem teste num repositório desse tamanho |
 
 ---

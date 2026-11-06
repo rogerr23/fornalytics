@@ -121,3 +121,15 @@ Uma entrada por sessão de trabalho: o que foi pedido, o que saiu, o que preciso
   - trocar de aba apagava as respostas do lado a lado e do "Isso faz?" (agora ficam no cache do TanStack Query durante a sessão);
   - o status `implemented` aparecia como "prometida e implementada" até em projetos só de código (agora: "implementada no código").
 - **Pendente:** teste real das duas abas quando a cota voltar (roteiro em `docs/prompts.md`, v3).
+
+## 2026-11-06 — Fase 8 (Ideia × Código)
+
+- **Pedido:** explicar a Fase 8 e executá-la com as recomendações (aba igual em todas as lentes, estado lido da base, parcial na coluna ✅).
+- **Resultado:** 112 testes no backend e 13 no frontend. O teste de integração garante que a rota não toca o provedor de IA. A tela foi conferida com uma base manual com os quatro status (sem IA):
+  - resumo "1 de 3 promessas entregues (1 em parte)";
+  - selo "em parte";
+  - evidência do documento abrindo na linha certa;
+  - colunas empilhadas no celular.
+  - O projeto de teste voltou para rascunho.
+- **Ajuste no caminho:** o ícone da coluna ficou colado no título, porque a formatação automática quebrou a linha do JSX e o espaço sumiu. Separados com `gap`.
+- **Pendente (da Fase 7):** teste real com o Gemini quando a cota voltar.
