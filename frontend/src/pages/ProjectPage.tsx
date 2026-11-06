@@ -4,6 +4,7 @@ import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-r
 import { ChatPanel } from '../features/chat/components/ChatPanel'
 import { ComparePanel } from '../features/compare/components/ComparePanel'
 import { DoesItPanel } from '../features/does-it/components/DoesItPanel'
+import { IdeaVsCodePanel } from '../features/idea-vs-code/components/IdeaVsCodePanel'
 import { CitationViewer } from '../features/citations/components/CitationViewer'
 import { LensSelector } from '../features/lens/components/LensSelector'
 import { useLens } from '../features/lens/hooks/useLens'
@@ -25,7 +26,7 @@ const TABS: TabItem<Tab>[] = [
   { value: 'chat', label: 'Chat' },
   { value: 'compare', label: 'Lado a lado' },
   { value: 'does-it', label: 'Isso faz?' },
-  { value: 'idea-vs-code', label: 'Ideia × Código', disabled: true, hint: 'Chega na Fase 8' },
+  { value: 'idea-vs-code', label: 'Ideia × Código' },
   { value: 'flows', label: 'Fluxos', disabled: true, hint: 'Chega na Fase 9' },
 ]
 
@@ -119,6 +120,9 @@ export function ProjectPage() {
         <ChatPanel projectId={projectId} lens={lens} onOpenCitation={setCitation} />
       )}
       {tab === 'compare' && <ComparePanel projectId={projectId} onOpenCitation={setCitation} />}
+      {tab === 'idea-vs-code' && (
+        <IdeaVsCodePanel projectId={projectId} onOpenCitation={setCitation} />
+      )}
       {tab === 'does-it' && (
         <DoesItPanel projectId={projectId} lens={lens} onOpenCitation={setCitation} />
       )}

@@ -1,5 +1,5 @@
 import { errorMessage } from '../../../shared/api/client'
-import type { Lens, TextCitation } from '../../../shared/api/lens'
+import { evidenceToCitation, type Lens, type TextCitation } from '../../../shared/api/lens'
 import { useSessionHistory } from '../../../shared/api/sessionHistory'
 import { citationLabel } from '../../../shared/lib/citations'
 import { FEATURE_STATUS_TEXT } from '../../../shared/lib/featureStatus'
@@ -8,7 +8,7 @@ import { QuestionForm } from '../../../shared/ui/QuestionForm'
 import { Spinner } from '../../../shared/ui/Spinner'
 import { useDoesIt } from '../hooks/useDoesIt'
 import type { DoesItResult } from '../types'
-import { evidenceToCitation, VERDICT_VIEW } from '../verdict'
+import { VERDICT_VIEW } from '../verdict'
 
 const SUGGESTIONS = [
   'O produto tem login?',

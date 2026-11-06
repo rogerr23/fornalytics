@@ -25,6 +25,27 @@ export interface TextCitation {
   problem: string | null
 }
 
+/** A checked citation with a short quote (product base, "Isso faz?"). */
+export interface Evidence {
+  source_type: string
+  path: string
+  line_start: number
+  line_end: number
+  quote: string
+}
+
+/** Evidence was already checked by the backend: it opens like a valid citation. */
+export function evidenceToCitation(evidence: Evidence): TextCitation {
+  return {
+    marker: `[[${evidence.path}:L${evidence.line_start}-L${evidence.line_end}]]`,
+    path: evidence.path,
+    line_start: evidence.line_start,
+    line_end: evidence.line_end,
+    valid: true,
+    problem: null,
+  }
+}
+
 export type LensEvent =
   | { type: 'conversation'; conversation_id: string }
   | { type: 'delta'; text: string }
