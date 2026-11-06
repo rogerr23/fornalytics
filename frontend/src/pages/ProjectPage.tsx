@@ -2,6 +2,8 @@ import { useQuery } from '@tanstack/react-query'
 import { useCallback, useState } from 'react'
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { ChatPanel } from '../features/chat/components/ChatPanel'
+import { ComparePanel } from '../features/compare/components/ComparePanel'
+import { DoesItPanel } from '../features/does-it/components/DoesItPanel'
 import { CitationViewer } from '../features/citations/components/CitationViewer'
 import { LensSelector } from '../features/lens/components/LensSelector'
 import { useLens } from '../features/lens/hooks/useLens'
@@ -21,8 +23,8 @@ type Tab = 'overview' | 'chat' | 'compare' | 'does-it' | 'idea-vs-code' | 'flows
 const TABS: TabItem<Tab>[] = [
   { value: 'overview', label: 'Visão geral' },
   { value: 'chat', label: 'Chat' },
-  { value: 'compare', label: 'Lado a lado', disabled: true, hint: 'Chega na Fase 7' },
-  { value: 'does-it', label: 'Isso faz?', disabled: true, hint: 'Chega na Fase 7' },
+  { value: 'compare', label: 'Lado a lado' },
+  { value: 'does-it', label: 'Isso faz?' },
   { value: 'idea-vs-code', label: 'Ideia × Código', disabled: true, hint: 'Chega na Fase 8' },
   { value: 'flows', label: 'Fluxos', disabled: true, hint: 'Chega na Fase 9' },
 ]
@@ -115,6 +117,10 @@ export function ProjectPage() {
       )}
       {tab === 'chat' && (
         <ChatPanel projectId={projectId} lens={lens} onOpenCitation={setCitation} />
+      )}
+      {tab === 'compare' && <ComparePanel projectId={projectId} onOpenCitation={setCitation} />}
+      {tab === 'does-it' && (
+        <DoesItPanel projectId={projectId} lens={lens} onOpenCitation={setCitation} />
       )}
 
       <CitationViewer projectId={projectId} citation={citation} onClose={closeCitation} />
