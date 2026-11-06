@@ -47,3 +47,12 @@ class Verdict(StrEnum):
     SIM = "sim"
     NAO = "nao"
     PARCIALMENTE = "parcialmente"
+
+
+class ComparisonState(StrEnum):
+    """Whether Ideia × Código can compare (it needs an idea document and code)."""
+
+    AVAILABLE = "available"
+    MISSING_IDEA = "missing_idea"
+    MISSING_CODE = "missing_code"
+    NO_PROMISES = "no_promises"

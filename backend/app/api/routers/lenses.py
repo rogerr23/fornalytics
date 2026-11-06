@@ -8,6 +8,7 @@ from app.api.deps import (
     get_chat_service,
     get_compare_service,
     get_does_it_service,
+    get_idea_vs_code_service,
     get_overview_service,
 )
 from app.api.schemas.lenses import (
@@ -16,6 +17,7 @@ from app.api.schemas.lenses import (
     ConversationOut,
     DoesItIn,
     DoesItOut,
+    IdeaVsCodeOut,
     MessageOut,
     QuestionIn,
 )
@@ -24,6 +26,7 @@ from app.domain.enums import Lens
 from app.lenses.chat import ChatService
 from app.lenses.compare import CompareService
 from app.lenses.does_it import DoesItService
+from app.lenses.idea_vs_code import IdeaVsCodeService
 from app.lenses.overview import OverviewService
 
 router = APIRouter(prefix="/projects/{project_id}", tags=["lenses"])
@@ -32,6 +35,7 @@ Overview = Annotated[OverviewService, Depends(get_overview_service)]
 Chat = Annotated[ChatService, Depends(get_chat_service)]
 Compare = Annotated[CompareService, Depends(get_compare_service)]
 DoesIt = Annotated[DoesItService, Depends(get_does_it_service)]
+IdeaVsCodeDep = Annotated[IdeaVsCodeService, Depends(get_idea_vs_code_service)]
 
 
 @router.get("/overview", response_class=StreamingResponse)
@@ -73,3 +77,10 @@ async def does_it(project_id: uuid.UUID, body: DoesItIn, service: DoesIt) -> Doe
     """sim | nao | parcialmente, always in agreement with the product base."""
     result = await service.ask(project_id, body.question.strip(), body.lens)
     return DoesItOut.model_validate(result.model_dump())
+
+
+@router.get("/idea-vs-code")
+async def idea_vs_code(project_id: uuid.UUID, service: IdeaVsCodeDep) -> IdeaVsCodeOut:
+    """Base features grouped by status: promised and done, promised only, undocumented."""
+    result = await service.get(project_id)
+    return IdeaVsCodeOut.model_validate(result.model_dump())

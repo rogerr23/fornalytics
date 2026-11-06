@@ -5,7 +5,14 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field
 
-from app.domain.enums import FeatureStatus, Lens, MessageRole, SourceType, Verdict
+from app.domain.enums import (
+    ComparisonState,
+    FeatureStatus,
+    Lens,
+    MessageRole,
+    SourceType,
+    Verdict,
+)
 
 MAX_QUESTION_CHARS = 2000
 
@@ -80,3 +87,27 @@ class DoesItOut(BaseModel):
     justification: str
     evidence: list[EvidenceOut]
     adjusted: bool
+
+
+class FeatureOut(BaseModel):
+    name: str
+    description: str
+    status: FeatureStatus
+    promise_ref: str
+    evidence: list[EvidenceOut]
+
+
+class IdeaVsCodeColumnsOut(BaseModel):
+    delivered: list[FeatureOut]
+    missing: list[FeatureOut]
+    undocumented: list[FeatureOut]
+
+
+class IdeaVsCodeOut(BaseModel):
+    state: ComparisonState
+    columns: IdeaVsCodeColumnsOut
+    promised: int
+    implemented: int
+    partial: int
+    base_created_at: datetime
+    base_outdated: bool
