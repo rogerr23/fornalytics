@@ -4,6 +4,14 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 
 ## [Não lançado]
 
+### Fase 5 — lentes (visão geral e chat)
+- Prompts das três lentes e das tarefas `overview.md` e `chat.md`.
+- `GET /overview?lens=` (SSE): gerada na primeira abertura de cada lente e depois servida do cache; respostas com erro não são guardadas.
+- `POST /chat` (SSE) com base + arquivos relevantes (ranking sem embeddings, limitado por `CHAT_MAX_FILES` e `CHAT_CONTEXT_TOKENS`) e as últimas `CHAT_HISTORY_TURNS` trocas.
+- `GET /conversations/{id}` para remontar o chat depois de recarregar a página.
+- Marcadores `[[caminho:Lx-Ly]]` conferidos ao fim de cada resposta e enviados no evento `citations`; erro com o stream aberto vira o evento `error`.
+- Contrato dos eventos em `docs/api-events.md`; prompts v2 em `docs/prompts.md`.
+
 ### Fase 4 — base do produto
 - Modelos `ProductBase`, `Evidence`, `Promise` e `FeatureStatus`, que servem também de schema da saída estruturada.
 - Extração em duas etapas (promessas da ideia → base do código); só código ou só documento usam uma chamada.

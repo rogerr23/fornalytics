@@ -76,7 +76,7 @@ erDiagram
 | `source_files` | Texto extraído de cada arquivo (um zip gera vários) | `path` único **no projeto** (repetidos ganham sufixo, ver `docs/ingestion.md`); o arquivo original não é guardado |
 | `product_bases` | A base do produto em JSON | **Uma por projeto**: reprocessar substitui. O Ideia × Código sai daqui (`features[].status`) |
 | `lens_cache` | Saídas em cache por lente (hoje só a visão geral) | Chave: projeto + lente + tipo |
-| `conversations` / `messages` | Histórico do chat | `citations` guarda as citações já validadas |
+| `conversations` / `messages` | Histórico do chat | `citations` guarda as citações já validadas (só nas respostas). `created_at` das mensagens é preenchido pela aplicação: o `now()` do banco é o mesmo dentro de uma transação e embaralharia a ordem |
 
 ## Valores aceitos
 
@@ -99,6 +99,16 @@ Guardados como texto, com uma regra (`CHECK`) no banco que recusa qualquer outro
 - **`projects.status`** vai para `processing` por um `UPDATE` condicional (dois cliques não iniciam dois processamentos). Ao subir o servidor, projetos presos em `processing` viram `failed`.
 - **Adicionar ou remover uma fonte** de um projeto que já tem base marca `base_outdated = true`; a base anterior continua valendo até o reprocessamento.
 - O formato dos campos `jsonb` é definido pelos modelos Pydantic de `app/domain/`.
+
+## Formato de `messages.citations`
+
+Lista de `TextCitation` (`app/domain/lenses.py`), uma por marcador distinto da resposta:
+
+```json
+[{ "marker": "[[src/a.py:L10-L20]]", "path": "src/a.py", "line_start": 10, "line_end": 20, "valid": true, "problem": null }]
+```
+
+`problem`: `file_not_found` ou `lines_out_of_range` quando `valid` é falso. É `null` nas mensagens da pessoa.
 
 ## Formato de `product_bases.data`
 

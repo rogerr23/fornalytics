@@ -120,7 +120,7 @@ Casos: só código → pula a etapa 1 (sem `documented_only`/`undocumented`; o I
 - Como a base já resume o produto inteiro e aponta os arquivos de cada funcionalidade, o risco de perder um arquivo importante fica baixo.
 
 ### 4.5 Prompts (`backend/app/prompts/`)
-- Arquivos `.md` versionados: `base.md`, `lens_cliente.md`, `lens_nao_tecnico.md`, `lens_tecnico.md`, `extraction_idea.md`, `extraction.md`, `compare_lenses.md`, `does_it.md`, `flow.md`. (Não há prompt de Ideia × Código: ele sai da base.)
+- Arquivos `.md` versionados: `base.md`, `lens_cliente.md`, `lens_nao_tecnico.md`, `lens_tecnico.md`, `extraction_idea.md`, `extraction.md`, `overview.md`, `chat.md`, `compare_lenses.md`, `does_it.md`, `flow.md`. (Não há prompt de Ideia × Código: ele sai da base.)
 - Prompt final = `base.md` + prompt da lente + tarefa. Usar o esboço da seção 6.4 do documento de produto como ponto de partida.
 - Conjunto de avaliação em `backend/evals/questions.yaml` (cerca de 15 perguntas por lente, com o que se espera da resposta) para checar qualidade e consistência entre lentes.
 - **Avaliação = checagens automáticas + revisão manual.** Um script confere o que é objetivo (citações válidas, "não encontrei no material" quando esperado, status certo no "Isso faz?"); o tom de cada lente o Roger revisa. Sem IA como juiz, para não gastar cota.
@@ -168,6 +168,7 @@ Prefixo `/api`. Respostas longas via **SSE** (Server-Sent Events).
 | POST | `/projects/{id}/does-it` | "Isso o produto faz?" → `sim | não | parcialmente` + justificativa + evidências |
 | GET | `/projects/{id}/idea-vs-code` | Features da base agrupadas por status (sem chamar a IA) |
 | POST | `/projects/{id}/flow` | Fluxo passo a passo + nós/arestas; o backend devolve também o texto Mermaid montado |
+| GET | `/projects/{id}/conversations/{conversation_id}` | Mensagens de uma conversa do chat (para remontar a tela após recarregar) |
 | GET | `/projects/{id}/files?path=` | Conteúdo de um arquivo (para abrir citações) |
 
 **Processamento em segundo plano:** a tarefa roda no próprio processo do backend (sem fila externa) e grava cada etapa em `projects.status` / `status_detail`. Ao subir o servidor, projetos presos em `processing` viram `failed` com mensagem para reprocessar.
@@ -369,7 +370,7 @@ Marque `[x]` ao concluir cada item e atualize esta lista no mesmo commit.
 - [x] **Fase 2, provedor de IA:** `LLMProvider`, `GeminiProvider`, `OllamaProvider`, tratamento de 429
 - [x] **Fase 3, ingestão:** migração (remove `comparisons`, adiciona `projects.base_outdated`), criação de projeto, upload com ingestão na hora e resumo, remoção de fonte, extração de texto, filtros, linhas numeradas, estimativa de tokens e corte por prioridade
 - [x] **Fase 4, base do produto:** extração em duas etapas (promessas da ideia → base do código com status), validação de citações com trecho curto, processamento em segundo plano e progresso por SSE
-- [ ] **Fase 5, MVP de lentes:** visão geral por lente (com cache) e chat com streaming
+- [x] **Fase 5, MVP de lentes:** visão geral por lente (com cache) e chat com streaming
 - [ ] **Fase 6, frontend do MVP:** upload, processamento, seletor de lente, visão geral e chat
 - [ ] **Fase 7, lado a lado (uma chamada para as 3 lentes) e "Isso faz?"**
 - [ ] **Fase 8, Ideia × Código:** rota `GET` que agrupa a base por status e a tela em três colunas (sem chamada à IA)
@@ -462,6 +463,12 @@ Marque `[x]` ao concluir cada item e atualize esta lista no mesmo commit.
 | 2026-11-06 | Material só de documento usa **uma** chamada (etapa b direto sobre o documento, tudo `documented_only`) | Economizar cota: a etapa (a) não acrescentaria nada |
 | 2026-11-06 | Cada feature traz `promise_ref`, e o backend reconcilia o status (uma feature por promessa) | Não depender do modelo para a coerência do Ideia × Código; nenhuma promessa some |
 | 2026-11-06 | Status do processamento por SSE lendo o banco a cada 1s, com sessão curta por leitura | Recarregar a página não perde nada; nenhuma conexão fica presa enquanto espera |
+| 2026-11-06 | Visão geral por SSE, nos mesmos eventos do chat (`delta`, `citations`, `done`, `error`); o cache é devolvido pelos mesmos eventos | Texto aparece aos poucos na primeira geração; o frontend trata os dois casos com um código só |
+| 2026-11-06 | Visão geral usa só a base (sem arquivos) | Barata e previsível; a lente técnica cita pelas evidências da base |
+| 2026-11-06 | Marcador `[[caminho:Lx-Ly]]` válido = arquivo existe no projeto e as linhas existem | O marcador não leva trecho (texto mais limpo, menos tokens); pega arquivo inventado e linha fora do arquivo |
+| 2026-11-06 | Tarefas `overview.md` e `chat.md` na lista de prompts; lente cliente sem marcadores de citação | Faltavam prompts de tarefa para esses casos; citação técnica não serve ao cliente final |
+| 2026-11-06 | Nova rota `GET /conversations/{id}` | O chat precisa sobreviver a um recarregamento da página |
+| 2026-11-06 | `created_at` das mensagens preenchido pela aplicação | `now()` é fixo dentro da transação; a ordem do histórico não pode depender de empate |
 | 2026-11-06 | Extração com ~56 mil tokens de código passou sem 429 no `gemini-3.5-flash` | Primeiro teste real; o limite de 200 mil por etapa segue sem teste num repositório desse tamanho |
 
 ---

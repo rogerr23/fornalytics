@@ -74,3 +74,13 @@ Uma entrada por sessão de trabalho: o que foi pedido, o que saiu, o que preciso
   - o documento de produto entrou como `fornalytics-projeto (2).md`, porque o zip já tinha um arquivo com esse nome (sufixo da Fase 3, funcionando como esperado);
   - as ideias "futuras" do documento viraram promessas `documented_only` (anotado em `docs/prompts.md` para a Fase 11);
   - o limite de 200 mil tokens por etapa ainda não foi testado num repositório desse tamanho: o teste usou cerca de 56 mil.
+
+## 2026-11-06 — Fase 5 (lentes: visão geral e chat)
+
+- **Pedido:** explicar a Fase 5 e executá-la com as recomendações das decisões.
+- **Resultado:** 88 testes (75 de unidade). Teste real no Gemini: as visões gerais técnica (20 citações válidas) e cliente (sem jargão) saíram com tons bem diferentes; o chat técnico deu 13 citações válidas e o histórico passou entre perguntas em lentes diferentes. Projeto de teste apagado em seguida.
+- **Descobertas no caminho:**
+  - O teste de integração mostrou que o `now()` do Postgres é o mesmo dentro de uma transação, e a ordem das mensagens ficava aleatória. O horário passou a ser gravado pela aplicação.
+  - O primeiro reprocessamento caiu em 503 três vezes seguidas e o projeto ficou `failed` com a mensagem amigável; a segunda tentativa passou. Bom sinal para a demo: o erro aparece de forma limpa.
+  - Uma resposta confundiu um exemplo do documento (nota fiscal da loja de demonstração) com uma funcionalidade planejada do produto. Anotado para o eval.
+  - Desta vez, o reprocessamento descartou 10 citações (na Fase 4 foram 0).
