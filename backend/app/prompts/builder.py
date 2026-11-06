@@ -14,6 +14,8 @@ class Task(StrEnum):
 
     EXTRACTION_IDEA = "extraction_idea"
     EXTRACTION = "extraction"
+    OVERVIEW = "overview"
+    CHAT = "chat"
 
 
 @cache
