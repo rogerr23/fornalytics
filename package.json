@@ -1,0 +1,21 @@
+{
+  "name": "fornalytics",
+  "private": true,
+  "description": "Comandos do projeto. Funciona igual no Windows, macOS e Linux.",
+  "scripts": {
+    "setup": "npm install && uv --directory backend sync && npm --prefix frontend install",
+    "dev": "concurrently --names api,web --prefix-colors blue,magenta --kill-others \"npm:dev:api\" \"npm:dev:web\"",
+    "dev:api": "uv --directory backend run uvicorn app.main:app --reload --port 8000",
+    "dev:web": "npm --prefix frontend run dev",
+    "test": "npm run test:api",
+    "test:api": "uv --directory backend run pytest",
+    "lint": "npm run lint:api && npm run lint:web",
+    "lint:api": "uv --directory backend run ruff check . && uv --directory backend run ruff format --check .",
+    "lint:web": "npm --prefix frontend run lint && npm --prefix frontend run format:check",
+    "format": "uv --directory backend run ruff format . && uv --directory backend run ruff check --fix . && npm --prefix frontend run format",
+    "migrate": "node -e \"console.log('Disponível a partir da Fase 1.')\""
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.6"
+  }
+}
