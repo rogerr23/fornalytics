@@ -39,3 +39,11 @@ class FeatureStatus(StrEnum):
     PARTIAL = "partial"
     DOCUMENTED_ONLY = "documented_only"
     UNDOCUMENTED = "undocumented"
+
+
+class Verdict(StrEnum):
+    """Answer of "Isso o produto faz?"."""
+
+    SIM = "sim"
+    NAO = "nao"
+    PARCIALMENTE = "parcialmente"

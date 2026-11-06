@@ -5,7 +5,8 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
-from app.domain.enums import Lens, MessageRole
+from app.domain.enums import FeatureStatus, Lens, MessageRole, Verdict
+from app.domain.product_base import Evidence
 
 
 class TextCitation(BaseModel):
@@ -54,3 +55,50 @@ class AnswerFailed(BaseModel):
 
 
 LensEvent = ConversationStarted | TextDelta | CitationsChecked | AnswerDone | AnswerFailed
+
+
+# Side by side: one model call answers in the three lenses (structured output schema).
+
+
+class CompareDraft(BaseModel):
+    cliente: str
+    nao_tecnico: str
+    tecnico: str
+
+
+class LensAnswer(BaseModel):
+    lens: Lens
+    text: str
+    citations: list[TextCitation]
+
+
+class CompareResult(BaseModel):
+    question: str
+    answers: list[LensAnswer]
+
+
+# "Isso o produto faz?": the verdict always agrees with the product base.
+
+
+class DoesItDraft(BaseModel):
+    """Structured output schema. `feature_name` is "" when no base feature answers it."""
+
+    verdict: Verdict
+    feature_name: str
+    justification: str
+    evidence: list[Evidence]
+
+
+class MatchedFeature(BaseModel):
+    name: str
+    status: FeatureStatus
+
+
+class DoesItResult(BaseModel):
+    question: str
+    verdict: Verdict
+    feature: MatchedFeature | None
+    justification: str
+    evidence: list[Evidence]
+    # True when the backend changed the model's verdict to agree with the base.
+    adjusted: bool
