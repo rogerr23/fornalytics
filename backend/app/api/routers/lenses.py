@@ -4,17 +4,34 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 
-from app.api.deps import get_chat_service, get_overview_service
-from app.api.schemas.lenses import ChatIn, ConversationOut, MessageOut
+from app.api.deps import (
+    get_chat_service,
+    get_compare_service,
+    get_does_it_service,
+    get_overview_service,
+)
+from app.api.schemas.lenses import (
+    ChatIn,
+    CompareOut,
+    ConversationOut,
+    DoesItIn,
+    DoesItOut,
+    MessageOut,
+    QuestionIn,
+)
 from app.api.sse import lens_events, sse_response
 from app.domain.enums import Lens
 from app.lenses.chat import ChatService
+from app.lenses.compare import CompareService
+from app.lenses.does_it import DoesItService
 from app.lenses.overview import OverviewService
 
 router = APIRouter(prefix="/projects/{project_id}", tags=["lenses"])
 
 Overview = Annotated[OverviewService, Depends(get_overview_service)]
 Chat = Annotated[ChatService, Depends(get_chat_service)]
+Compare = Annotated[CompareService, Depends(get_compare_service)]
+DoesIt = Annotated[DoesItService, Depends(get_does_it_service)]
 
 
 @router.get("/overview", response_class=StreamingResponse)
@@ -42,3 +59,17 @@ async def conversation(
         id=conversation_id,
         messages=[MessageOut.model_validate(m.model_dump()) for m in messages],
     )
+
+
+@router.post("/compare-lenses")
+async def compare_lenses(project_id: uuid.UUID, body: QuestionIn, service: Compare) -> CompareOut:
+    """The same question in the three lenses, in one model call (no streaming)."""
+    result = await service.compare(project_id, body.question.strip())
+    return CompareOut.model_validate(result.model_dump())
+
+
+@router.post("/does-it")
+async def does_it(project_id: uuid.UUID, body: DoesItIn, service: DoesIt) -> DoesItOut:
+    """sim | nao | parcialmente, always in agreement with the product base."""
+    result = await service.ask(project_id, body.question.strip(), body.lens)
+    return DoesItOut.model_validate(result.model_dump())

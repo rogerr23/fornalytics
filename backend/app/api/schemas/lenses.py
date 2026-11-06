@@ -5,7 +5,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field
 
-from app.domain.enums import Lens, MessageRole
+from app.domain.enums import FeatureStatus, Lens, MessageRole, SourceType, Verdict
 
 MAX_QUESTION_CHARS = 2000
 
@@ -38,3 +38,45 @@ class MessageOut(BaseModel):
 class ConversationOut(BaseModel):
     id: uuid.UUID
     messages: list[MessageOut]
+
+
+class QuestionIn(BaseModel):
+    question: str = Field(min_length=1, max_length=MAX_QUESTION_CHARS)
+
+
+class DoesItIn(QuestionIn):
+    # Only the tone of the justification changes with the lens; the verdict never does.
+    lens: Lens
+
+
+class LensAnswerOut(BaseModel):
+    lens: Lens
+    text: str
+    citations: list[TextCitationOut]
+
+
+class CompareOut(BaseModel):
+    question: str
+    answers: list[LensAnswerOut]
+
+
+class EvidenceOut(BaseModel):
+    source_type: SourceType
+    path: str
+    line_start: int
+    line_end: int
+    quote: str
+
+
+class MatchedFeatureOut(BaseModel):
+    name: str
+    status: FeatureStatus
+
+
+class DoesItOut(BaseModel):
+    question: str
+    verdict: Verdict
+    feature: MatchedFeatureOut | None
+    justification: str
+    evidence: list[EvidenceOut]
+    adjusted: bool

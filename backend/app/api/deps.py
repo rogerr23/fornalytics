@@ -14,6 +14,8 @@ from app.extraction.runner import ProcessingRunner
 from app.extraction.service import ProductBaseService
 from app.ingestion.service import IngestionService
 from app.lenses.chat import ChatService
+from app.lenses.compare import CompareService
+from app.lenses.does_it import DoesItService
 from app.lenses.overview import OverviewService
 from app.llm.base import LLMProvider
 from app.llm.factory import create_provider
@@ -82,3 +84,15 @@ def get_chat_service(
     sessions: SessionsDep, provider: ProviderDep, settings: SettingsDep
 ) -> ChatService:
     return ChatService(sessions, provider, PromptBuilder(), settings)
+
+
+def get_compare_service(
+    sessions: SessionsDep, provider: ProviderDep, settings: SettingsDep
+) -> CompareService:
+    return CompareService(sessions, provider, PromptBuilder(), settings)
+
+
+def get_does_it_service(
+    sessions: SessionsDep, provider: ProviderDep, settings: SettingsDep
+) -> DoesItService:
+    return DoesItService(sessions, provider, PromptBuilder(), settings)
