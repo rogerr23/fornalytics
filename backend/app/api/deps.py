@@ -8,11 +8,13 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 
 from app.core.config import Settings, get_settings
-from app.db.session import DatabaseNotConfigured, get_engine, get_sessionmaker
+from app.db.session import DatabaseNotConfigured, SessionFactory, get_engine, get_sessionmaker
 from app.extraction.extractor import ProductBaseExtractor
-from app.extraction.runner import ProcessingRunner, SessionFactory
+from app.extraction.runner import ProcessingRunner
 from app.extraction.service import ProductBaseService
 from app.ingestion.service import IngestionService
+from app.lenses.chat import ChatService
+from app.lenses.overview import OverviewService
 from app.llm.base import LLMProvider
 from app.llm.factory import create_provider
 from app.projects.service import ProjectService
@@ -66,3 +68,17 @@ def get_ingestion_service(session: SessionDep, settings: SettingsDep) -> Ingesti
 
 def get_product_base_service(session: SessionDep) -> ProductBaseService:
     return ProductBaseService(session)
+
+
+SessionsDep = Annotated[SessionFactory, Depends(get_session_factory)]
+ProviderDep = Annotated[LLMProvider, Depends(get_llm_provider)]
+
+
+def get_overview_service(sessions: SessionsDep, provider: ProviderDep) -> OverviewService:
+    return OverviewService(sessions, provider, PromptBuilder())
+
+
+def get_chat_service(
+    sessions: SessionsDep, provider: ProviderDep, settings: SettingsDep
+) -> ChatService:
+    return ChatService(sessions, provider, PromptBuilder(), settings)

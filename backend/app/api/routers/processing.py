@@ -8,8 +8,9 @@ from fastapi.responses import StreamingResponse
 from app.api.deps import get_processing_runner, get_product_base_service, get_session_factory
 from app.api.schemas.product_base import ProcessingStatusOut, ProductBaseOut
 from app.api.sse import sse_event, sse_heartbeat, sse_response
+from app.db.session import SessionFactory
 from app.domain.projects import Project
-from app.extraction.runner import ProcessingRunner, SessionFactory
+from app.extraction.runner import ProcessingRunner
 from app.extraction.service import ProductBaseService
 from app.extraction.status import watch_status
 
