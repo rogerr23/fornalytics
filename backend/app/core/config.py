@@ -15,6 +15,8 @@ class Settings(BaseSettings):
         env_file=REPO_ROOT / ".env",
         env_file_encoding="utf-8",
         extra="ignore",
+        # "KEY=" in .env means "not set": fall back to the default.
+        env_ignore_empty=True,
     )
 
     # LLM
