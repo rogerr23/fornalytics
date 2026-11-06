@@ -16,6 +16,7 @@ from app.ingestion.service import IngestionService
 from app.lenses.chat import ChatService
 from app.lenses.compare import CompareService
 from app.lenses.does_it import DoesItService
+from app.lenses.flow import BaseFlowsService, FlowService
 from app.lenses.idea_vs_code import IdeaVsCodeService
 from app.lenses.overview import OverviewService
 from app.llm.base import LLMProvider
@@ -102,3 +103,13 @@ def get_does_it_service(
 def get_idea_vs_code_service(session: SessionDep) -> IdeaVsCodeService:
     """No AI provider here: this tab works even without a model configured."""
     return IdeaVsCodeService(session)
+
+
+def get_base_flows_service(session: SessionDep) -> BaseFlowsService:
+    return BaseFlowsService(session)
+
+
+def get_flow_service(
+    sessions: SessionsDep, provider: ProviderDep, settings: SettingsDep
+) -> FlowService:
+    return FlowService(sessions, provider, PromptBuilder(), settings)

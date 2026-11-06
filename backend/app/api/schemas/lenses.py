@@ -111,3 +111,21 @@ class IdeaVsCodeOut(BaseModel):
     partial: int
     base_created_at: datetime
     base_outdated: bool
+
+
+class FlowIn(QuestionIn):
+    lens: Lens
+
+
+class FlowStepOut(BaseModel):
+    text: str
+    evidence: list[EvidenceOut]
+
+
+class FlowOut(BaseModel):
+    name: str
+    question: str
+    steps: list[FlowStepOut]
+    evidence: list[EvidenceOut]
+    mermaid: str
+    from_base: bool

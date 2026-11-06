@@ -5,9 +5,11 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 
 from app.api.deps import (
+    get_base_flows_service,
     get_chat_service,
     get_compare_service,
     get_does_it_service,
+    get_flow_service,
     get_idea_vs_code_service,
     get_overview_service,
 )
@@ -17,6 +19,8 @@ from app.api.schemas.lenses import (
     ConversationOut,
     DoesItIn,
     DoesItOut,
+    FlowIn,
+    FlowOut,
     IdeaVsCodeOut,
     MessageOut,
     QuestionIn,
@@ -26,6 +30,7 @@ from app.domain.enums import Lens
 from app.lenses.chat import ChatService
 from app.lenses.compare import CompareService
 from app.lenses.does_it import DoesItService
+from app.lenses.flow import BaseFlowsService, FlowService
 from app.lenses.idea_vs_code import IdeaVsCodeService
 from app.lenses.overview import OverviewService
 
@@ -35,6 +40,8 @@ Overview = Annotated[OverviewService, Depends(get_overview_service)]
 Chat = Annotated[ChatService, Depends(get_chat_service)]
 Compare = Annotated[CompareService, Depends(get_compare_service)]
 DoesIt = Annotated[DoesItService, Depends(get_does_it_service)]
+BaseFlows = Annotated[BaseFlowsService, Depends(get_base_flows_service)]
+FlowDep = Annotated[FlowService, Depends(get_flow_service)]
 IdeaVsCodeDep = Annotated[IdeaVsCodeService, Depends(get_idea_vs_code_service)]
 
 
@@ -84,3 +91,16 @@ async def idea_vs_code(project_id: uuid.UUID, service: IdeaVsCodeDep) -> IdeaVsC
     """Base features grouped by status: promised and done, promised only, undocumented."""
     result = await service.get(project_id)
     return IdeaVsCodeOut.model_validate(result.model_dump())
+
+
+@router.get("/flows")
+async def base_flows(project_id: uuid.UUID, service: BaseFlows) -> list[FlowOut]:
+    """Flows already in the product base, with a straight Mermaid diagram (no AI call)."""
+    return [FlowOut.model_validate(flow.model_dump()) for flow in await service.list(project_id)]
+
+
+@router.post("/flow")
+async def flow(project_id: uuid.UUID, body: FlowIn, service: FlowDep) -> FlowOut:
+    """'O que acontece quando…?': steps + nodes and edges from the model; Mermaid built here."""
+    result = await service.ask(project_id, body.question.strip(), body.lens)
+    return FlowOut.model_validate(result.model_dump())
