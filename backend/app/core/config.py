@@ -32,9 +32,11 @@ class Settings(BaseSettings):
     test_database_url: str = ""
 
     # Context limits
-    max_context_tokens: int = 500_000
+    # Per extraction step (documents, code). Keep below the free tier's tokens-per-minute limit.
+    max_context_tokens: int = 200_000
     chat_max_files: int = 8
     chat_context_tokens: int = 30_000
+    chat_history_turns: int = 6
 
     # Upload limits
     max_upload_mb: int = 20

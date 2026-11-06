@@ -14,6 +14,14 @@ class AppError(Exception):
         self.message = message
 
 
+class NotFound(AppError):
+    status_code = 404
+
+
+class Conflict(AppError):
+    status_code = 409
+
+
 async def app_error_handler(_request: Request, exc: Exception) -> JSONResponse:
     assert isinstance(exc, AppError)
     return JSONResponse(status_code=exc.status_code, content={"detail": exc.message})

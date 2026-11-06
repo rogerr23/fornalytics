@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app import __version__
 from app.api.deps import get_llm_provider
-from app.api.routers import health
+from app.api.routers import health, projects, sources
 from app.core.config import Settings, get_settings
 from app.core.errors import AppError, app_error_handler
 from app.core.logging import setup_logging
@@ -40,6 +40,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     app.add_exception_handler(AppError, app_error_handler)
     app.include_router(health.router, prefix=API_PREFIX)
+    app.include_router(projects.router, prefix=API_PREFIX)
+    app.include_router(sources.router, prefix=API_PREFIX)
     return app
 
 

@@ -2,13 +2,17 @@
 
 from collections.abc import AsyncIterator
 from functools import lru_cache
+from typing import Annotated
 
+from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 
-from app.core.config import get_settings
+from app.core.config import Settings, get_settings
 from app.db.session import DatabaseNotConfigured, get_engine, get_sessionmaker
+from app.ingestion.service import IngestionService
 from app.llm.base import LLMProvider
 from app.llm.factory import create_provider
+from app.projects.service import ProjectService
 
 
 async def get_session() -> AsyncIterator[AsyncSession]:
@@ -28,3 +32,15 @@ def get_optional_engine() -> AsyncEngine | None:
 def get_llm_provider() -> LLMProvider:
     """One provider per process. Raises ProviderNotConfigured (503) if .env is incomplete."""
     return create_provider(get_settings())
+
+
+SessionDep = Annotated[AsyncSession, Depends(get_session)]
+SettingsDep = Annotated[Settings, Depends(get_settings)]
+
+
+def get_project_service(session: SessionDep, settings: SettingsDep) -> ProjectService:
+    return ProjectService(session, settings)
+
+
+def get_ingestion_service(session: SessionDep, settings: SettingsDep) -> IngestionService:
+    return IngestionService(session, settings)
