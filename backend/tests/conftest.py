@@ -3,13 +3,16 @@
 from collections.abc import AsyncIterator
 from pathlib import Path
 
+import httpx
 import pytest
 from alembic import command
 from alembic.config import Config
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.deps import get_session
 from app.core.config import get_settings
 from app.db.session import create_engine
+from app.main import create_app
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 
@@ -44,3 +47,17 @@ async def db_session(migrated_database: str) -> AsyncIterator[AsyncSession]:
             await session.close()
             await transaction.rollback()
     await engine.dispose()
+
+
+@pytest.fixture
+async def api(db_session: AsyncSession) -> AsyncIterator[httpx.AsyncClient]:
+    """HTTP client for the app, sharing the rolled-back test session (same event loop)."""
+    app = create_app()
+
+    async def session_override() -> AsyncIterator[AsyncSession]:
+        yield db_session
+
+    app.dependency_overrides[get_session] = session_override
+    transport = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test/api") as client:
+        yield client
