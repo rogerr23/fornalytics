@@ -3,10 +3,17 @@ import { apiGet } from './client'
 
 export type DatabaseStatus = 'ok' | 'unavailable' | 'not_configured'
 
+export interface LLMStatus {
+  provider: 'gemini' | 'ollama'
+  model: string
+  configured: boolean
+}
+
 export interface HealthResponse {
   status: 'ok'
   version: string
   database: DatabaseStatus
+  llm: LLMStatus
 }
 
 export function useHealth() {
