@@ -27,4 +27,5 @@ Uma entrada por sessão de trabalho: o que foi pedido, o que saiu, o que preciso
 - **Pedido:** montar o esqueleto do projeto conforme a explicação aprovada.
 - **Resultado:** scripts npm na raiz, backend FastAPI com `/api/health` e teste, frontend com Tailwind, TanStack Query e React Router mostrando o status da API. Lint, formatação, build e teste passando; tela conferida no navegador.
 - **Correções no caminho:** o modelo atual do Vite trocou o ESLint pelo `oxlint` e veio com TypeScript 7, que o `typescript-eslint` ainda não suporta. Mantido o ESLint (padrão do projeto) com TypeScript fixado em 6.0.
-- **Pendente:** instalar o `uv` e rodar `npm run setup` para gerar o `uv.lock` e validar o fluxo oficial.
+- **Fechamento (2026-11-06):** `uv` instalado via Homebrew; `npm run setup` gerou o `backend/uv.lock`; `npm test`, `npm run lint` e `npm run dev` conferidos pelo fluxo oficial. Fase 0 concluída.
+- **Observação:** `npm audit` aponta 10 vulnerabilidades moderadas no `minimatch`, usado só pelo ESLint em desenvolvimento (não vai para a aplicação). A correção automática rebaixaria o ESLint; acompanhar uma atualização do ESLint.

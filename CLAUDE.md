@@ -335,7 +335,7 @@ frontend/src/
 
 Marque `[x]` ao concluir cada item e atualize esta lista no mesmo commit.
 
-- [ ] **Fase 0, base do projeto:** estrutura de pastas, `uv` + FastAPI com `/api/health`, Vite + React, `.env.example`, `.gitignore`, `.gitattributes`, `package.json` da raiz com os scripts, `README.md`, ruff/ESLint/Prettier configurados, `docs/architecture.md` e `CHANGELOG.md`
+- [x] **Fase 0, base do projeto:** estrutura de pastas, `uv` + FastAPI com `/api/health`, Vite + React, `.env.example`, `.gitignore`, `.gitattributes`, `package.json` da raiz com os scripts, `README.md`, ruff/ESLint/Prettier configurados, `docs/architecture.md` e `CHANGELOG.md`
 - [ ] **Fase 1, banco:** conexão com o Neon, models, primeira migração Alembic
 - [ ] **Fase 2, provedor de IA:** `LLMProvider`, `GeminiProvider`, `OllamaProvider`, tratamento de 429
 - [ ] **Fase 3, ingestão:** upload, extração de texto, filtros, linhas numeradas, estimativa de tokens
