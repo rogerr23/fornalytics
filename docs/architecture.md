@@ -71,11 +71,43 @@ sequenceDiagram
 
 ## Frontend
 
-- `app/`: rotas e providers (TanStack Query).
+- `app/`: rotas, layout e providers (TanStack Query e lente ativa).
 - `pages/`: telas, só compõem features.
-- `features/<nome>/`: uma pasta por funcionalidade, sem importar outra feature.
-- `shared/`: cliente da API, componentes genéricos e utilitários.
+- `features/<nome>/`: uma pasta por funcionalidade (`api.ts`, `hooks/`, `components/`, `types.ts`), sem importar outra feature.
+- `shared/`: cliente da API, leitor de SSE, componentes genéricos e utilitários.
 - Em desenvolvimento, o Vite encaminha `/api` para `localhost:8000` (sem CORS).
+
+### Rotas
+
+| Rota | Página | Features usadas |
+|---|---|---|
+| `/` | `ProjectsPage` | `projects`, `health` |
+| `/projects/new` e `/projects/:id/material` | `NewProjectPage` | `projects`, `upload`, `processing` |
+| `/projects/:id/processing` | `ProcessingPage` | `processing` |
+| `/projects/:id?tab=overview\|chat` | `ProjectPage` | `lens`, `overview`, `chat`, `citations`, `processing` |
+
+### Streaming
+
+- `shared/api/sse.ts` lê SSE com `fetch` (sem biblioteca). O `SseParser` junta eventos cortados entre pedaços e ignora `: ping`.
+- **Status do processamento** e **visão geral** usam o `streamedQuery` do TanStack Query:
+  - os eventos vão sendo somados num estado (`reducer`);
+  - a visão geral fica em cache por projeto e lente (`staleTime: Infinity`), então trocar de lente e voltar não chama a IA.
+- **Chat:** uma *mutation* lê o stream e mostra a resposta parcial. No `done`, recarrega a conversa do servidor, que já tem a resposta salva com as citações. O id da conversa fica no `localStorage`, por projeto.
+
+### Citações na tela
+
+As features não importam umas às outras (seção 8.3 do `CLAUDE.md`). Por isso, as citações ficam divididas em três partes:
+
+```mermaid
+flowchart LR
+    O[overview / chat] -->|texto + citations| AM[shared/ui/AnswerMarkdown]
+    AM -->|clique numa citação válida| P[ProjectPage]
+    P -->|citation| CV[features/citations/CitationViewer]
+    CV -->|GET /files?path=| API[(API)]
+```
+
+- `shared/lib/citations.ts` troca cada `[[caminho:Lx-Ly]]` por um link `cite:N` no Markdown.
+- `AnswerMarkdown` desenha o chip: cinza enquanto o evento `citations` não chega, clicável quando é válida, riscado com "não verificada" quando não confere.
 
 ## O que já existe
 
@@ -89,7 +121,7 @@ sequenceDiagram
 | Projetos (criar, listar, detalhar) e ingestão no envio: extratores, filtros, limites, corte por prioridade | ✅ | 3 |
 | Base do produto: extração em duas etapas, reconciliação, validação de citações, processamento em segundo plano e status por SSE | ✅ | 4 |
 | Lentes: visão geral por lente (cache) e chat com streaming, contexto selecionado e citações por marcador | ✅ | 5 |
-| Telas do MVP | ⏳ | 6 |
+| Telas do MVP: projetos, material com resumo da ingestão, progresso por SSE, projeto com seletor de lente, visão geral, chat e visualizador de citações | ✅ | 6 |
 | Lado a lado e "Isso faz?" | ⏳ | 7 |
 | Ideia × Código (agrupa a base por status) | ⏳ | 8 |
 | Fluxo (JSON → Mermaid montado no backend) | ⏳ | 9 |

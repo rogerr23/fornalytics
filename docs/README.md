@@ -13,6 +13,6 @@ A tabela completa (o que vai em cada doc e quando atualizar) está na seção 14
 | [ingestion.md](ingestion.md) | Ativo |
 | [api-events.md](api-events.md) | Ativo |
 | [prompts.md](prompts.md) | Ativo |
-| runbook.md | A criar no primeiro problema recorrente |
+| [runbook.md](runbook.md) | Ativo |
 | demo-script.md | A criar na Fase 10 |
 | evals/ | A criar na Fase 11 |

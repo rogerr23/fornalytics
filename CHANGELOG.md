@@ -4,6 +4,17 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 
 ## [Não lançado]
 
+### Fase 6 — frontend do MVP
+- Telas: lista de projetos (com o status da API, do banco e da IA no rodapé), novo projeto, material, processamento e projeto com abas.
+- Material: envio de zip, documento ou texto colado, resumo de cada envio (lidos, ignorados por motivo, renomeados), aviso com o que fica fora do limite e remoção de fontes.
+- Processamento com progresso por SSE, retomado ao recarregar; erro amigável com "Tentar de novo".
+- Seletor de lente sempre visível (lembrado no navegador); visão geral com streaming e cache por lente; chat com histórico, sugestões por lente e "Nova conversa".
+- Citações viram chips: as válidas abrem o arquivo com as linhas destacadas e as inválidas aparecem como "não verificada".
+- Aviso "O material mudou" com Reprocessar; abas das Fases 7 a 9 visíveis e desativadas.
+- Mensagem de cota legível: a espera aparece em segundos, minutos ou horas, e o limite diário é identificado como tal (antes: "52323 segundos").
+- `docs/runbook.md` com os limites do plano gratuito e como testar a tela sem gastar cota; `.claude/launch.json` para abrir o app no painel de navegador do Claude.
+- Novas dependências: `react-markdown`, `remark-gfm` e `vitest` (testes do leitor de SSE, dos marcadores e da montagem da resposta); `npm test` roda backend e frontend.
+
 ### Fase 5 — lentes (visão geral e chat)
 - Prompts das três lentes e das tarefas `overview.md` e `chat.md`.
 - `GET /overview?lens=` (SSE): gerada na primeira abertura de cada lente e depois servida do cache; respostas com erro não são guardadas.

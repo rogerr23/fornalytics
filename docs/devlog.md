@@ -84,3 +84,24 @@ Uma entrada por sessão de trabalho: o que foi pedido, o que saiu, o que preciso
   - O primeiro reprocessamento caiu em 503 três vezes seguidas e o projeto ficou `failed` com a mensagem amigável; a segunda tentativa passou. Bom sinal para a demo: o erro aparece de forma limpa.
   - Uma resposta confundiu um exemplo do documento (nota fiscal da loja de demonstração) com uma funcionalidade planejada do produto. Anotado para o eval.
   - Desta vez, o reprocessamento descartou 10 citações (na Fase 4 foram 0).
+
+## 2026-11-06 — Fase 6 (frontend do MVP)
+
+- **Pedido:** explicar a Fase 6 e executá-la com as recomendações (`remark-gfm`, abas futuras desativadas, lente e conversa no navegador, manter o projeto de teste).
+- **Resultado:** 4 telas e 9 features no frontend; 8 testes de frontend (leitor de SSE, marcadores, montagem da resposta) somados aos 83 do backend. Jornada conferida no painel de navegador do app:
+  - criar projeto;
+  - enviar zip (146 arquivos, 86,6 mil tokens) e documento, com resumo;
+  - processar com progresso por SSE e retomada ao recarregar;
+  - erro de cota amigável e "Tentar de novo";
+  - visão geral com tabela e chips de citação (válida abre o arquivo com as linhas destacadas; inválida aparece como "não verificada");
+  - cache ao trocar de lente;
+  - chat com selo da lente por resposta e histórico mantido ao recarregar;
+  - aviso "O material mudou".
+- **Cota:** o processamento real esbarrou no 429 e, no "Tentar de novo", a espera pedida foi de 52.323 segundos: **acabou a cota diária** do `gemini-3.5-flash`. A visão geral e o chat foram conferidos com um provedor simulado num script local, fora do repositório (o conteúdo real do Gemini já tinha sido validado na Fase 5). Registrado em `docs/runbook.md`.
+- **Corrigido no caminho:**
+  - a mensagem de cota passou a mostrar minutos ou horas e a dizer quando é o limite diário;
+  - as sugestões do chat não apareciam numa conversa nova (consulta desativada conta como `isPending` no TanStack Query; trocado por `isLoading`);
+  - a pergunta aparecia duas vezes durante o streaming;
+  - o selo da lente esticava na largura toda.
+- **Projeto de teste:** "Fornalytics (teste)" ficou no banco com o zip e o documento, em rascunho. Falta clicar em **Processar** quando a cota voltar.
+- **Observação:** o build avisa que o pacote passa de 500 KB (por causa do Markdown). Não atrapalha a demo; dividir o código fica para a Fase 11, se fizer falta.

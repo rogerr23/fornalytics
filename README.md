@@ -71,7 +71,7 @@ Todos rodam a partir da raiz do projeto.
 |---|---|
 | `npm run setup` | Instala as dependências da raiz, do backend e do frontend |
 | `npm run dev` | Sobe backend (8000) e frontend (5173) juntos |
-| `npm test` | Roda os testes |
+| `npm test` | Roda os testes (backend com pytest, frontend com vitest) |
 | `npm run lint` | Confere lint e formatação (backend e frontend) |
 | `npm run format` | Formata o código |
 | `npm run migrate` | Aplica as migrações do banco |
@@ -123,7 +123,20 @@ fornalytics/
 
 Detalhes das camadas e das regras de código em [`docs/architecture.md`](docs/architecture.md).
 
-### Testando o envio de material (sem frontend)
+### Usando a interface
+
+Com `npm run dev` rodando, abra http://localhost:5173:
+
+1. **Novo projeto** → dê um nome ao produto.
+2. **Material:** envie o código (`.zip`) e, se tiver, o documento da ideia (PDF, DOCX, MD ou TXT) ou cole um texto. Cada envio mostra os arquivos lidos, os ignorados e o que ficaria fora do limite.
+3. **Processar:** a tela mostra cada etapa da IA. Pode levar alguns minutos, e recarregar a página não perde o progresso.
+4. **Projeto:** escolha a lente (Cliente, Não técnico ou Técnico) no canto superior.
+   - **Visão geral:** gerada na primeira abertura de cada lente; depois vem do cache.
+   - **Chat:** perguntas na lente ativa.
+   - Citações válidas abrem o trecho do arquivo; as que não conferem aparecem como "não verificada".
+5. Se o material mudar depois do processamento, aparece o aviso **O material mudou** com o botão **Reprocessar**.
+
+### Testando a API direto (sem frontend)
 
 Com `npm run dev` rodando, abra http://localhost:8000/docs:
 
