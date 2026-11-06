@@ -3,8 +3,6 @@
 PostgreSQL no Neon, acessado com SQLAlchemy 2 assíncrono + psycopg 3. Migrações com Alembic.
 Código: `backend/app/db/models/` (tabelas) e `backend/app/domain/enums.py` (valores fixos).
 
-> **Mudança planejada (início da Fase 3, [ADR 0002](adr/0002-ideia-x-codigo-derivado-da-base.md)):** a tabela `comparisons` será removida (o Ideia × Código passa a sair da base) e `projects` ganha `base_outdated`. O diagrama e as tabelas abaixo já mostram o esquema de destino; até a migração, o banco ainda tem `comparisons`.
-
 ## Diagrama
 
 ```mermaid
@@ -74,8 +72,8 @@ erDiagram
 | Tabela | Para quê | Observações |
 |---|---|---|
 | `projects` | Um produto analisado | `status` acompanha o processamento (Fase 4); `base_outdated` indica que as fontes mudaram depois da última base |
-| `sources` | Cada arquivo enviado ou texto colado | `filename` vazio para texto colado |
-| `source_files` | Texto extraído de cada arquivo (um zip gera vários) | Único por `source_id` + `path`; o arquivo original não é guardado |
+| `sources` | Cada arquivo enviado ou texto colado | `filename` vazio para texto colado; `type` validado no envio (zip = `code`) |
+| `source_files` | Texto extraído de cada arquivo (um zip gera vários) | `path` único **no projeto** (repetidos ganham sufixo, ver `docs/ingestion.md`); o arquivo original não é guardado |
 | `product_bases` | A base do produto em JSON | **Uma por projeto**: reprocessar substitui. O Ideia × Código sai daqui (`features[].status`) |
 | `lens_cache` | Saídas em cache por lente (hoje só a visão geral) | Chave: projeto + lente + tipo |
 | `conversations` / `messages` | Histórico do chat | `citations` guarda as citações já validadas |

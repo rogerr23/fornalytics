@@ -4,6 +4,15 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 
 ## [Não lançado]
 
+### Fase 3 — ingestão
+- Migração: remove `comparisons` e adiciona `projects.base_outdated` (ADR 0002).
+- Rotas de projetos (`POST/GET /projects`, `GET /projects/{id}`) e de fontes (`POST/GET /sources`, `DELETE /sources/{id}`, `GET /files?path=`), com os primeiros repositórios e serviços.
+- Ingestão no envio: extratores de zip, PDF (com marcadores de página), DOCX e texto; filtros (pastas, lockfiles, binários, minificados, segredos, arquivos grandes, caminhos inseguros).
+- Limites de upload, de tamanho descompactado real e de número de arquivos; mensagens em português.
+- Corte por prioridade por etapa (documentos e código) com lista do que fica de fora; `MAX_CONTEXT_TOKENS` passa a 200 mil; `CHAT_HISTORY_TURNS` no `.env.example`.
+- Caminhos repetidos ganham sufixo; adicionar ou remover fonte marca a base como desatualizada.
+- `docs/ingestion.md`.
+
 ### Revisão do fluxo (antes da Fase 3)
 - Ingestão passa a acontecer no envio de cada fonte, com resumo imediato; o processamento faz só a extração pela IA.
 - Material acima do limite entra por prioridade, e o que fica de fora é listado na tela.

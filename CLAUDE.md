@@ -80,7 +80,9 @@ A ingestão acontece **no envio** de cada fonte; o processamento faz só a extra
   ```
 - A ingestão roda **dentro do `POST /sources`** (síncrona, sem IA). Guardar só o **texto extraído** no banco; o arquivo original é descartado ao fim da requisição. A resposta traz o resumo: arquivos usados, arquivos ignorados (com o motivo agrupado), tokens estimados e o que ficaria de fora do limite.
 - Estimar tokens pela heurística **caracteres ÷ 4** (sem chamar API).
-- **Corte por prioridade:** quando o material do projeto passar de `MAX_CONTEXT_TOKENS`, os arquivos entram na extração pela ordem de prioridade acima até bater o limite; os que ficam de fora são listados na tela (nunca corte silencioso). A mesma função de ranking serve ao chat (seção 4.4).
+- **Corte por prioridade:** o limite `MAX_CONTEXT_TOKENS` (padrão 200 mil) vale **por etapa da extração**: documentos (etapa a) de um lado, código (etapa b) do outro. Quando um grupo passa do limite, os arquivos entram pela ordem de prioridade acima enquanto couberem; os que ficam de fora são listados na tela (nunca corte silencioso). A mesma função (`ingestion/selection.py`) serve ao chat (seção 4.4).
+- Também são ignorados `.env` e chaves (`.pem`, `.key`) de dentro do zip, para não mandar segredos à IA; `.env.example` entra.
+- **Caminhos repetidos no projeto** ganham sufixo (`README.md` → `README (2).md`), para cada citação apontar para um único arquivo.
 - **Segurança do upload** (limites no `.env`): `MAX_UPLOAD_MB` (padrão 20), `MAX_UNZIPPED_MB` (padrão 100) e `MAX_FILES` (padrão 2000). Ler o zip entrada por entrada, somando o tamanho descompactado e parando ao passar do limite; ignorar caminhos absolutos ou com `..`.
 
 ### 4.2 Base do produto (`backend/app/extraction/`)
@@ -141,7 +143,7 @@ Casos: só código → pula a etapa 1 (sem `documented_only`/`undocumented`; o I
 - **Invalidação de cache:** ao reprocessar um projeto, apagar o `lens_cache` dele e zerar `base_outdated` na mesma transação que grava a nova base. Sem versionamento de bases (histórico está em "futuro").
 - **Base desatualizada:** adicionar ou remover uma fonte de um projeto que já tem base marca `base_outdated = true`. A base anterior continua visível até o reprocessamento; a interface mostra o aviso "O material mudou".
 - Ids em **UUID**. Campos com valores fixos (`status`, `lens`, `type`, `role`, `kind`) são **texto + CHECK**, não `ENUM` nativo; os valores ficam em `app/domain/enums.py`.
-- `product_bases` e `comparisons` têm **uma linha por projeto** (`project_id` único).
+- `product_bases` tem **uma linha por projeto** (`project_id` único).
 - Toda mudança de esquema vira uma migração Alembic. Nunca alterar tabela manualmente. Detalhes em `docs/data-model.md`.
 
 ---
@@ -154,7 +156,8 @@ Prefixo `/api`. Respostas longas via **SSE** (Server-Sent Events).
 |---|---|---|
 | POST | `/projects` | Criar projeto |
 | GET | `/projects`, `/projects/{id}` | Listar / detalhar |
-| POST | `/projects/{id}/sources` | Upload de arquivo (multipart) ou texto colado; faz a ingestão na hora e devolve o resumo (arquivos usados/ignorados, tokens, o que fica de fora) |
+| POST | `/projects/{id}/sources` | Formulário multipart com `type` e `file` **ou** `title` + `content` (texto colado); faz a ingestão na hora e devolve o resumo (arquivos usados/ignorados, tokens, o que fica de fora) |
+| GET | `/projects/{id}/sources` | Lista as fontes do projeto |
 | DELETE | `/projects/{id}/sources/{source_id}` | Remove uma fonte (marca a base como desatualizada) |
 | POST | `/projects/{id}/process` | Dispara a extração pela IA (promessas + base) em segundo plano; responde na hora (202) |
 | GET | `/projects/{id}/status` | Acompanha o processamento por SSE (lê `projects.status`; recarregar a página não perde nada) |
@@ -231,9 +234,12 @@ backend/
 │   │   ├── retry.py          # RetryingProvider: nova tentativa no 429 e 5xx
 │   │   ├── check.py          # npm run llm:check / llm:models
 │   │   └── factory.py        # get_provider(settings) → LLMProvider
+│   ├── projects/service.py   # ProjectService (criar, listar, detalhar)
 │   ├── ingestion/
-│   │   ├── extractors/       # um extractor por formato (zip, pdf, docx, text)
+│   │   ├── extractors/       # um extractor por formato (zip, pdf, docx, text) + registro
 │   │   ├── filters.py        # o que ignorar e o que priorizar
+│   │   ├── selection.py      # corte por prioridade dentro de um limite de tokens
+│   │   ├── limits.py         # limite por etapa (documentos, código) de um projeto
 │   │   ├── rendering.py      # renderização com linhas numeradas
 │   │   ├── tokens.py         # estimativa de tokens
 │   │   └── service.py        # IngestionService
@@ -361,7 +367,7 @@ Marque `[x]` ao concluir cada item e atualize esta lista no mesmo commit.
 - [x] **Fase 0, base do projeto:** estrutura de pastas, `uv` + FastAPI com `/api/health`, Vite + React, `.env.example`, `.gitignore`, `.gitattributes`, `package.json` da raiz com os scripts, `README.md`, ruff/ESLint/Prettier configurados, `docs/architecture.md` e `CHANGELOG.md`
 - [x] **Fase 1, banco:** conexão com o Neon, models, primeira migração Alembic
 - [x] **Fase 2, provedor de IA:** `LLMProvider`, `GeminiProvider`, `OllamaProvider`, tratamento de 429
-- [ ] **Fase 3, ingestão:** migração (remove `comparisons`, adiciona `projects.base_outdated`), criação de projeto, upload com ingestão na hora e resumo, remoção de fonte, extração de texto, filtros, linhas numeradas, estimativa de tokens e corte por prioridade
+- [x] **Fase 3, ingestão:** migração (remove `comparisons`, adiciona `projects.base_outdated`), criação de projeto, upload com ingestão na hora e resumo, remoção de fonte, extração de texto, filtros, linhas numeradas, estimativa de tokens e corte por prioridade
 - [ ] **Fase 4, base do produto:** extração em duas etapas (promessas da ideia → base do código com status), validação de citações com trecho curto, processamento em segundo plano e progresso por SSE
 - [ ] **Fase 5, MVP de lentes:** visão geral por lente (com cache) e chat com streaming
 - [ ] **Fase 6, frontend do MVP:** upload, processamento, seletor de lente, visão geral e chat
@@ -447,6 +453,11 @@ Marque `[x]` ao concluir cada item e atualize esta lista no mesmo commit.
 | 2026-11-06 | `DELETE /sources` e `projects.base_outdated`; a base anterior segue visível até reprocessar | Definir o que acontece quando o material muda depois do processamento |
 | 2026-11-06 | `quote` da evidência curto (~120 caracteres), conferido dentro do intervalo de linhas | Menos tokens de saída e menor risco de a base vir cortada |
 | 2026-11-06 | Visão geral sob demanda (primeira abertura de cada lente) e histórico do chat limitado por `CHAT_HISTORY_TURNS` | Processamento mais rápido e custo por pergunta previsível |
+| 2026-11-06 | `MAX_CONTEXT_TOKENS` vale por etapa (documentos e código) e o padrão cai para 200 mil | Na extração em duas etapas cada grupo vai numa chamada; chamadas acima do limite de tokens por minuto do plano gratuito voltam 429 sempre. Conferir o número real na Fase 4 |
+| 2026-11-06 | `.env` e chaves de dentro do zip são ignorados | Não mandar segredos de quem envia o repositório para a IA |
+| 2026-11-06 | Caminho repetido no projeto ganha sufixo (`README (2).md`) | Cada citação aponta para um único arquivo |
+| 2026-11-06 | Zip é sempre `code`; documentos são `idea_doc` ou `transcript`; texto colado é `text` ou `transcript` | Regras simples, validadas no envio |
+| 2026-11-06 | Texto extraído em thread separada (`asyncio.to_thread`); arquivos de exemplo dos testes gerados em memória | Não travar o servidor ao ler PDF/zip; nenhum binário no repositório |
 
 ---
 

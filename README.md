@@ -123,6 +123,14 @@ fornalytics/
 
 Detalhes das camadas e das regras de código em [`docs/architecture.md`](docs/architecture.md).
 
+### Testando o envio de material (sem frontend)
+
+Com `npm run dev` rodando, abra http://localhost:8000/docs:
+
+1. `POST /api/projects` → **Try it out** → `{"name": "Meu projeto"}`.
+2. `POST /api/projects/{project_id}/sources` → escolha `type` (`code` para `.zip`) e o arquivo, ou `title` + `content` para colar texto.
+3. A resposta mostra os arquivos usados, os ignorados e o que ficaria de fora do limite. Formatos, filtros e limites em [`docs/ingestion.md`](docs/ingestion.md).
+
 ---
 
 ## Variáveis de ambiente

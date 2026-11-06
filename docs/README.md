@@ -10,7 +10,7 @@ A tabela completa (o que vai em cada doc e quando atualizar) está na seção 14
 | [architecture.md](architecture.md) | Ativo |
 | [data-model.md](data-model.md) | Ativo |
 | [llm.md](llm.md) | Ativo |
-| ingestion.md | A criar na Fase 3 |
+| [ingestion.md](ingestion.md) | Ativo |
 | api-events.md | A criar na Fase 4 |
 | prompts.md | A criar na Fase 5 |
 | runbook.md | A criar no primeiro problema recorrente |

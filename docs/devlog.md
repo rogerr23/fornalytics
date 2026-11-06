@@ -55,3 +55,11 @@ Uma entrada por sessão de trabalho: o que foi pedido, o que saiu, o que preciso
 - **Decisões:** ingestão no envio; corte por prioridade; Ideia × Código derivado da base, com extração em duas etapas (ADR 0002); lado a lado em uma chamada; fluxo em JSON com Mermaid montado no backend; remoção de fonte com aviso de base desatualizada; ajustes menores (trecho curto, visão geral sob demanda, histórico do chat limitado).
 - **Efeito na cota:** processar + Ideia × Código cai de 3–4 para 2 chamadas; o lado a lado, de 3 para 1.
 - **Próximo passo:** explicar a Fase 3, que começa pela migração que remove `comparisons` e adiciona `projects.base_outdated`.
+
+## 2026-11-06 — Fase 3 (ingestão)
+
+- **Pedido:** rever a Fase 3 com as docs da revisão do fluxo e executá-la, seguindo as recomendações nos pontos em aberto.
+- **Resultado:** migração aplicada (sai `comparisons`, entra `base_outdated`); projetos e fontes pela API; 48 testes (43 de unidade, sem rede). Conferido com um zip real do próprio Fornalytics: 74 arquivos usados, 9 vazios, 3 lockfiles e 1 SVG ignorados, pasta de fora do zip removida, nada fora do limite. PDF, texto colado, leitura de arquivo e os erros (zip com `../`, 2001 arquivos, tipo errado) conferidos pela API; o projeto de teste foi apagado do banco principal em seguida.
+- **Decisões dos pontos em aberto:** limite por etapa (documentos e código) com padrão de 200 mil tokens; `.env` de dentro do zip ignorado; caminho repetido ganha sufixo.
+- **Ajuste no caminho:** quando nenhum arquivo do zip é aproveitável, a mensagem agora diz o motivo de cada ignorado (ex.: "1 caminho inseguro").
+- **Observação:** os arquivos de exemplo dos testes (zip, PDF, DOCX) são gerados em memória; o PDF é montado à mão, sem biblioteca extra.

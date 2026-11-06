@@ -51,7 +51,7 @@ flowchart TD
 | Frontend com rotas, TanStack Query e Tailwind | ✅ | 0 |
 | Banco: sessão assíncrona, 8 tabelas, migração inicial, status no health | ✅ | 1 |
 | Provedores de IA (Gemini, Ollama, Fake) com novas tentativas | ✅ | 2 |
-| Ingestão | ⏳ | 3 |
+| Projetos (criar, listar, detalhar) e ingestão no envio: extratores, filtros, limites, corte por prioridade | ✅ | 3 |
 | Base do produto e citações | ⏳ | 4 |
 | Lentes (visão geral e chat) | ⏳ | 5 |
 | Telas do MVP | ⏳ | 6 |
