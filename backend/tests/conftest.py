@@ -7,6 +7,7 @@ import httpx
 import pytest
 from alembic import command
 from alembic.config import Config
+from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_session
@@ -50,14 +51,20 @@ async def db_session(migrated_database: str) -> AsyncIterator[AsyncSession]:
 
 
 @pytest.fixture
-async def api(db_session: AsyncSession) -> AsyncIterator[httpx.AsyncClient]:
-    """HTTP client for the app, sharing the rolled-back test session (same event loop)."""
+def app(db_session: AsyncSession) -> FastAPI:
+    """The app wired to the rolled-back test session (tests may add more overrides)."""
     app = create_app()
 
     async def session_override() -> AsyncIterator[AsyncSession]:
         yield db_session
 
     app.dependency_overrides[get_session] = session_override
+    return app
+
+
+@pytest.fixture
+async def api(app: FastAPI) -> AsyncIterator[httpx.AsyncClient]:
+    """HTTP client for the app (same event loop as the test session)."""
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://test/api") as client:
         yield client
