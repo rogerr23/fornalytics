@@ -1,26 +1,58 @@
-# Environment
+# Único .gitignore do projeto. Padrões sem "/" no início valem em qualquer pasta.
+
+# --- Segredos e configuração local ---
 .env
 .env.*
 !.env.example
+*.pem
+*.key
+*.local
+# Configurações pessoais do Claude Code (as compartilhadas em .claude/ podem ir para o Git)
+.claude/settings.local.json
 
-# Python
+# --- Python (backend) ---
 __pycache__/
 *.py[cod]
 .venv/
+*.egg-info/
 .pytest_cache/
 .ruff_cache/
+.mypy_cache/
 .coverage
+.coverage.*
 htmlcov/
 
-# Node
+# --- Node (frontend e raiz) ---
 node_modules/
 dist/
-*.tsbuildinfo
+dist-ssr/
 .vite/
+*.tsbuildinfo
+.eslintcache
+coverage/
 
-# OS / editors
+# --- Logs e temporários ---
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+tmp/
+*.tmp
+
+# --- Sistema operacional ---
 .DS_Store
+._*
 Thumbs.db
+Desktop.ini
+
+# --- Editores ---
 .idea/
 .vscode/*
 !.vscode/extensions.json
+*.swp
+*.swo
+*~
+*.suo
+*.sln
