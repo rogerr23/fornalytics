@@ -80,6 +80,21 @@ class SourceRepository:
         rows = await self._session.execute(query)
         return [FileRef.model_validate(row._mapping) for row in rows]
 
+    async def files(self, project_id: uuid.UUID) -> list[StoredFile]:
+        """Every stored file of the project, with content (used by the extraction)."""
+        query = (
+            select(
+                SourceFile.path,
+                SourceFile.content,
+                SourceFile.token_estimate,
+                Source.type.label("source_type"),
+            )
+            .join(Source, SourceFile.source_id == Source.id)
+            .where(Source.project_id == project_id)
+        )
+        rows = await self._session.execute(query)
+        return [StoredFile.model_validate(row._mapping) for row in rows]
+
     async def get_file(self, project_id: uuid.UUID, path: str) -> StoredFile:
         query = (
             select(
