@@ -6,12 +6,16 @@ Visão de como o Fornalytics é organizado. As regras completas estão na seçã
 
 ```mermaid
 flowchart LR
-    U[Upload<br/>zip, pdf, docx, md, txt, texto] --> I[Ingestão<br/>texto puro com linhas numeradas]
-    I --> E[Extração da base<br/>JSON com evidências]
+    U[Upload<br/>zip, pdf, docx, md, txt, texto] --> I[Ingestão no envio<br/>texto com linhas numeradas,<br/>resumo e corte por prioridade]
+    I --> P[Etapa a: promessas<br/>do documento da ideia]
+    P --> E[Etapa b: base do código<br/>status de cada promessa]
+    I --> E
     E --> DB[(PostgreSQL<br/>Neon)]
-    DB --> L[Lentes<br/>visão geral, chat, lado a lado,<br/>Isso faz?, Ideia × Código, fluxo]
+    DB --> L[Lentes<br/>visão geral, chat, lado a lado,<br/>Isso faz?, fluxo]
+    DB --> IC[Ideia × Código<br/>agrupa a base, sem IA]
     L --> C[Validação de citações]
     C --> F[Frontend]
+    IC --> F
 ```
 
 ## Camadas do backend
@@ -52,5 +56,5 @@ flowchart TD
 | Lentes (visão geral e chat) | ⏳ | 5 |
 | Telas do MVP | ⏳ | 6 |
 | Lado a lado e "Isso faz?" | ⏳ | 7 |
-| Ideia × Código | ⏳ | 8 |
-| Fluxo com Mermaid | ⏳ | 9 |
+| Ideia × Código (agrupa a base por status) | ⏳ | 8 |
+| Fluxo (JSON → Mermaid montado no backend) | ⏳ | 9 |

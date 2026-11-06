@@ -42,8 +42,11 @@ flowchart LR
 
 Os limites (requisições por minuto, por dia e tokens por minuto) mudam com frequência e variam por modelo. Consulte a tabela atual no AI Studio, na página de limites de uso (*rate limits*). Por isso o projeto:
 
-- extrai a base do produto **uma vez** por projeto e salva no banco;
-- guarda as visões gerais em cache;
+- extrai a base do produto **uma vez** por projeto (2 chamadas: promessas da ideia e base do código) e salva no banco;
+- gera cada visão geral só na primeira abertura da lente e guarda em cache;
+- monta o Ideia × Código a partir da base, sem chamar a IA;
+- responde o lado a lado com **uma** chamada para as 3 lentes;
+- no chat, manda só as últimas `CHAT_HISTORY_TURNS` trocas;
 - no chat, manda a base + poucos arquivos (`CHAT_MAX_FILES`, `CHAT_CONTEXT_TOKENS`);
 - não chama a IA no `/api/health`.
 
@@ -87,7 +90,7 @@ Use quando estiver sem internet ou sem cota. Troca **manual**, sem fallback auto
 2. No `.env`: `LLM_PROVIDER=ollama` e `OLLAMA_MODEL=llama3.2`.
 3. Confira com `npm run llm:check`.
 
-Limitações: modelos locais pequenos erram JSON estruturado com mais frequência e aceitam menos contexto. Funcionam para chat e visão geral; a **extração da base e o Ideia × Código devem ser feitos com o Gemini**.
+Limitações: modelos locais pequenos erram JSON estruturado com mais frequência e aceitam menos contexto. Funcionam para chat e visão geral; a **extração da base (de onde sai o Ideia × Código) e o lado a lado devem ser feitos com o Gemini**.
 
 ## Testes
 

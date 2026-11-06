@@ -47,10 +47,10 @@ Contexto: protótipo do Programa de Estágio Extreme Group (Desafio de IA com Cl
   - `GeminiProvider`: SDK oficial `google-genai`. Modelo definido por `GEMINI_MODEL` no `.env` (usar um modelo **Flash** disponível no plano gratuito; conferir a lista atual no AI Studio, não fixar versão no código).
   - `OllamaProvider`: API HTTP local do Ollama (`OLLAMA_BASE_URL`, `OLLAMA_MODEL`).
 - Seleção por `LLM_PROVIDER=gemini|ollama`, **só manual** (sem fallback automático entre provedores). Deve ser fácil acrescentar um `ClaudeProvider` no futuro sem mexer no resto.
-- O Ollama é reserva para chat e visão geral; a extração da base e o Ideia × Código funcionam melhor no Gemini (modelos locais pequenos erram JSON estruturado). Documentar isso em `docs/llm.md`.
+- O Ollama é reserva para chat e visão geral; a extração da base (de onde sai o Ideia × Código) e o lado a lado (saída estruturada) funcionam melhor no Gemini (modelos locais pequenos erram JSON estruturado). Documentar isso em `docs/llm.md`.
 - Métodos mínimos: `generate(system, messages) -> str`, `stream(system, messages) -> AsyncIterator[str]` e `generate_json(system, messages, schema: type[BaseModel]) -> BaseModel` (saída estruturada).
 - **Plano gratuito tem limite e oscila.** Tratar erro 429 (cota) **e 5xx (alta demanda, comum no Gemini gratuito)** com nova tentativa e espera exponencial (máx. 3 tentativas, nunca esperar mais de 30s) e devolver uma mensagem amigável ao frontend. As novas tentativas do próprio SDK ficam desligadas. Detalhes em `docs/llm.md`.
-- **Economizar cota:** a extração da base roda uma vez por projeto e fica salva no banco. Visões gerais por lente também ficam em cache no banco.
+- **Economizar cota:** a extração da base roda uma vez por projeto (2 chamadas: ideia e código, seção 4.2) e fica salva no banco. Visões gerais por lente são geradas **sob demanda** (na primeira abertura de cada lente) e ficam em cache no banco. O Ideia × Código não chama a IA (sai da base) e o lado a lado é **uma** chamada para as 3 lentes.
 - O conteúdo enviado ao plano gratuito do Gemini pode ser usado pelo Google: **usar apenas o repositório de demo próprio ou projetos open source.**
 
 ---
@@ -58,11 +58,15 @@ Contexto: protótipo do Programa de Estágio Extreme Group (Desafio de IA com Cl
 ## 4. Arquitetura e pipeline
 
 ```
-Upload ──▶ Ingestão ──▶ Extração da base ──▶ Lentes (visão geral, chat, lado a lado,
-(zip, pdf,  (texto puro,    (JSON estruturado     "Isso faz?", Ideia × Código, fluxo)
- docx, md,   linhas          com evidências,
- txt, texto) numeradas)      salvo em JSONB)
+POST /sources (sem IA, na hora)        POST /process (IA, em segundo plano)        Lentes
+Upload ──▶ Ingestão ──▶ resumo   ──▶   (a) promessas da ideia ──▶ (b) base do   ──▶ visão geral, chat,
+(zip, pdf,  (texto puro, (arquivos,         (só se houver doc)        código com       lado a lado, "Isso faz?",
+ docx, md,   linhas       ignorados,                                  status de cada   Ideia × Código (agrupa a
+ txt, texto) numeradas)   tokens, o que                               promessa, JSONB) base, sem IA), fluxo
+                          ficou de fora)
 ```
+
+A ingestão acontece **no envio** de cada fonte; o processamento faz só a extração pela IA. Assim a pessoa vê o tamanho do material e o que ficou de fora antes de gastar cota.
 
 ### 4.1 Ingestão (`backend/app/ingestion/`)
 - `.zip`: `zipfile` da biblioteca padrão. `.pdf`: `pdfplumber`. `.docx`: `python-docx`. `.md`, `.txt` e texto colado: direto.
@@ -74,8 +78,9 @@ Upload ──▶ Ingestão ──▶ Extração da base ──▶ Lentes (visão
   1| import ...
   2| ...
   ```
-- Guardar só o **texto extraído** no banco; o arquivo original é descartado após a ingestão.
-- Estimar tokens pela heurística **caracteres ÷ 4** (sem chamar API) e avisar quando o material passar de `MAX_CONTEXT_TOKENS`.
+- A ingestão roda **dentro do `POST /sources`** (síncrona, sem IA). Guardar só o **texto extraído** no banco; o arquivo original é descartado ao fim da requisição. A resposta traz o resumo: arquivos usados, arquivos ignorados (com o motivo agrupado), tokens estimados e o que ficaria de fora do limite.
+- Estimar tokens pela heurística **caracteres ÷ 4** (sem chamar API).
+- **Corte por prioridade:** quando o material do projeto passar de `MAX_CONTEXT_TOKENS`, os arquivos entram na extração pela ordem de prioridade acima até bater o limite; os que ficam de fora são listados na tela (nunca corte silencioso). A mesma função de ranking serve ao chat (seção 4.4).
 - **Segurança do upload** (limites no `.env`): `MAX_UPLOAD_MB` (padrão 20), `MAX_UNZIPPED_MB` (padrão 100) e `MAX_FILES` (padrão 2000). Ler o zip entrada por entrada, somando o tamanho descompactado e parando ao passar do limite; ignorar caminhos absolutos ou com `..`.
 
 ### 4.2 Base do produto (`backend/app/extraction/`)
@@ -84,27 +89,36 @@ Modelo Pydantic `ProductBase`, gerado com saída estruturada e salvo em `JSONB`:
 - `features[]`: `name`, `description`, `status` (`implemented` | `partial` | `documented_only` | `undocumented`), `evidence[]`
 - `flows[]`: `name`, `steps[]`, `evidence[]`
 - `business_rules[]`: `rule`, `evidence[]`
-- `evidence`: `{source_type, path, line_start, line_end, quote}`
+- `evidence`: `{source_type, path, line_start, line_end, quote}`. O `quote` é **curto** (um trecho de até ~120 caracteres de dentro do intervalo, não o bloco inteiro), para economizar tokens de saída e evitar que a base venha cortada.
 
-Quando houver documento da ideia **e** código, extrair as funcionalidades de cada um separadamente e depois cruzar (isso alimenta o Ideia × Código).
+**Extração em duas etapas** (o Ideia × Código sai daqui, sem chamada própria):
+1. **Promessas** (`extraction_idea.md`): se houver documento da ideia, transcrição ou texto, extrair a lista de funcionalidades prometidas, com evidências no documento.
+2. **Base** (`extraction.md`): extrair a `ProductBase` a partir do código, **recebendo a lista de promessas**. Cada promessa vira uma feature com `status` `implemented`, `partial` ou `documented_only` (não encontrada no código); o que existe no código e não foi prometido vira `undocumented`.
+
+Casos: só código → pula a etapa 1 (sem `documented_only`/`undocumented`; o Ideia × Código pede o documento da ideia). Só documento → pula a leitura de código; a base descreve a ideia e as features ficam `documented_only`.
+
+**Ideia × Código** = `features` agrupadas por status (✅ `implemented`/`partial`, ⚠️ `documented_only`, 🔍 `undocumented`). O "Isso faz?" lê o mesmo status, então os dois nunca se contradizem.
+
+**Fluxo:** o modelo `Flow` tem `steps[]` (texto + evidências), `nodes[]` (`id`, `label`) e `edges[]` (`source`, `target`, `label`). O modelo de IA devolve só isso; o **backend monta o texto Mermaid** (`flowchart`) numa função pura. O diagrama nunca sai com sintaxe inválida.
 
 **Modelos simples para a saída estruturada:** a saída estruturada do Gemini aceita só parte do JSON Schema. Todo modelo de `domain/` enviado como `schema` usa apenas tipos básicos, enums, listas e objetos aninhados. Proibido `dict` livre, unions e campos opcionais complexos.
 
 ### 4.3 Anti-alucinação (obrigatório)
 - O prompt base manda responder **apenas** com o material e dizer "não encontrei no material" quando faltar base.
-- **Validação de citações no backend:** toda evidência é conferida (o arquivo existe, as linhas existem e o trecho bate com o conteúdo). Citação inválida é descartada ou marcada como `unverified`; nunca é exibida como verdade.
+- **Validação de citações no backend:** toda evidência é conferida (o arquivo existe, as linhas existem e o trecho curto aparece dentro do intervalo de linhas, ignorando diferenças de espaço). Citação inválida é descartada ou marcada como `unverified`; nunca é exibida como verdade.
 - No frontend, a citação válida vira um link que abre o trecho do arquivo.
 - **Citações em respostas com streaming (chat):** o modelo escreve marcadores `[[caminho:L10-L20]]` no texto. O texto é transmitido como está; ao terminar, o backend valida todos os marcadores e envia um evento final `citations` com o resultado. O frontend troca cada marcador por link (válida) ou por um selo "não verificada".
 
 ### 4.4 Contexto enviado ao modelo (`lenses/context.py`)
-- Extração da base: todo o material renderizado (respeitando `MAX_CONTEXT_TOKENS`).
-- Chat, "Isso faz?" e fluxo: **base do produto + arquivos relevantes**, nunca o repositório inteiro.
+- Extração da base: todo o material renderizado, cortado por prioridade em `MAX_CONTEXT_TOKENS` (seção 4.1).
+- Chat, lado a lado, "Isso faz?" e fluxo: **base do produto + arquivos relevantes**, nunca o repositório inteiro.
+- Chat: entram só as últimas `CHAT_HISTORY_TURNS` trocas da conversa (padrão 6), para o custo por pergunta ficar previsível.
 - Seleção dos arquivos: ranking simples (palavras da pergunta no caminho e no conteúdo + arquivos citados nas evidências da base ligadas à pergunta), sem embeddings.
 - Limites no `.env`: `CHAT_MAX_FILES` (padrão 8) e `CHAT_CONTEXT_TOKENS` (padrão 30000). Os arquivos entram em ordem de relevância até bater o primeiro dos dois limites.
 - Como a base já resume o produto inteiro e aponta os arquivos de cada funcionalidade, o risco de perder um arquivo importante fica baixo.
 
 ### 4.5 Prompts (`backend/app/prompts/`)
-- Arquivos `.md` versionados: `base.md`, `lens_cliente.md`, `lens_nao_tecnico.md`, `lens_tecnico.md`, `extraction.md`, `idea_vs_code.md`, `does_it.md`, `flow.md`.
+- Arquivos `.md` versionados: `base.md`, `lens_cliente.md`, `lens_nao_tecnico.md`, `lens_tecnico.md`, `extraction_idea.md`, `extraction.md`, `compare_lenses.md`, `does_it.md`, `flow.md`. (Não há prompt de Ideia × Código: ele sai da base.)
 - Prompt final = `base.md` + prompt da lente + tarefa. Usar o esboço da seção 6.4 do documento de produto como ponto de partida.
 - Conjunto de avaliação em `backend/evals/questions.yaml` (cerca de 15 perguntas por lente, com o que se espera da resposta) para checar qualidade e consistência entre lentes.
 - **Avaliação = checagens automáticas + revisão manual.** Um script confere o que é objetivo (citações válidas, "não encontrei no material" quando esperado, status certo no "Isso faz?"); o tom de cada lente o Roger revisa. Sem IA como juiz, para não gastar cota.
@@ -117,15 +131,15 @@ Quando houver documento da ideia **e** código, extrair as funcionalidades de ca
 - `DATABASE_URL` = string de conexão **pooled** do Neon (`sslmode=require`), usada pela aplicação. `DATABASE_URL_DIRECT` = conexão direta, usada pelo Alembic.
 - Conexão pooled passa por PgBouncer, que não suporta prepared statements: criar o engine com `connect_args={"prepare_threshold": None}`. Isso vale para qualquer PgBouncer, não é específico do Neon.
 - O banco é só uma URL no `.env`: o código não pode ter nada específico do Neon.
-- Tabelas iniciais:
-  - `projects` (id, name, status: `draft|processing|ready|failed`, status_detail, created_at)
+- Tabelas (a migração inicial criou também `comparisons`; ela sai e `base_outdated` entra numa migração no início da Fase 3, ver ADR 0002):
+  - `projects` (id, name, status: `draft|processing|ready|failed`, status_detail, base_outdated boolean, created_at)
   - `sources` (id, project_id, type: `code|idea_doc|transcript|text`, filename, created_at)
   - `source_files` (id, source_id, path, content, token_estimate)
   - `product_bases` (id, project_id, data JSONB, provider, model, created_at)
   - `lens_cache` (project_id, lens, kind: `overview`, content, created_at)
   - `conversations` (id, project_id, created_at) e `messages` (id, conversation_id, lens, role, content, citations JSONB, created_at)
-  - `comparisons` (id, project_id, product_base_id, data JSONB, created_at), resultado do Ideia × Código
-- **Invalidação de cache:** ao reprocessar um projeto, apagar `lens_cache` e `comparisons` dele na mesma transação que grava a nova base. Sem versionamento de bases (histórico está em "futuro").
+- **Invalidação de cache:** ao reprocessar um projeto, apagar o `lens_cache` dele e zerar `base_outdated` na mesma transação que grava a nova base. Sem versionamento de bases (histórico está em "futuro").
+- **Base desatualizada:** adicionar ou remover uma fonte de um projeto que já tem base marca `base_outdated = true`. A base anterior continua visível até o reprocessamento; a interface mostra o aviso "O material mudou".
 - Ids em **UUID**. Campos com valores fixos (`status`, `lens`, `type`, `role`, `kind`) são **texto + CHECK**, não `ENUM` nativo; os valores ficam em `app/domain/enums.py`.
 - `product_bases` e `comparisons` têm **uma linha por projeto** (`project_id` único).
 - Toda mudança de esquema vira uma migração Alembic. Nunca alterar tabela manualmente. Detalhes em `docs/data-model.md`.
@@ -140,16 +154,17 @@ Prefixo `/api`. Respostas longas via **SSE** (Server-Sent Events).
 |---|---|---|
 | POST | `/projects` | Criar projeto |
 | GET | `/projects`, `/projects/{id}` | Listar / detalhar |
-| POST | `/projects/{id}/sources` | Upload de arquivo (multipart) ou texto colado |
-| POST | `/projects/{id}/process` | Dispara ingestão + extração em segundo plano; responde na hora (202) |
+| POST | `/projects/{id}/sources` | Upload de arquivo (multipart) ou texto colado; faz a ingestão na hora e devolve o resumo (arquivos usados/ignorados, tokens, o que fica de fora) |
+| DELETE | `/projects/{id}/sources/{source_id}` | Remove uma fonte (marca a base como desatualizada) |
+| POST | `/projects/{id}/process` | Dispara a extração pela IA (promessas + base) em segundo plano; responde na hora (202) |
 | GET | `/projects/{id}/status` | Acompanha o processamento por SSE (lê `projects.status`; recarregar a página não perde nada) |
 | GET | `/projects/{id}/base` | Base do produto |
-| GET | `/projects/{id}/overview?lens=` | Visão geral na lente (com cache) |
+| GET | `/projects/{id}/overview?lens=` | Visão geral na lente (gerada na primeira abertura, depois cache) |
 | POST | `/projects/{id}/chat` | Pergunta na lente escolhida; resposta por SSE |
-| POST | `/projects/{id}/compare-lenses` | Mesma pergunta nas 3 lentes (chamadas em paralelo) |
+| POST | `/projects/{id}/compare-lenses` | Mesma pergunta nas 3 lentes, em **uma** chamada com saída estruturada (sem streaming) |
 | POST | `/projects/{id}/does-it` | "Isso o produto faz?" → `sim | não | parcialmente` + justificativa + evidências |
-| POST/GET | `/projects/{id}/idea-vs-code` | Gerar / ler a comparação |
-| POST | `/projects/{id}/flow` | Fluxo passo a passo + diagrama Mermaid |
+| GET | `/projects/{id}/idea-vs-code` | Features da base agrupadas por status (sem chamar a IA) |
+| POST | `/projects/{id}/flow` | Fluxo passo a passo + nós/arestas; o backend devolve também o texto Mermaid montado |
 | GET | `/projects/{id}/files?path=` | Conteúdo de um arquivo (para abrir citações) |
 
 **Processamento em segundo plano:** a tarefa roda no próprio processo do backend (sem fila externa) e grava cada etapa em `projects.status` / `status_detail`. Ao subir o servidor, projetos presos em `processing` viram `failed` com mensagem para reprocessar.
@@ -161,6 +176,8 @@ Prefixo `/api`. Respostas longas via **SSE** (Server-Sent Events).
 - React + Vite + TypeScript, Tailwind CSS, TanStack Query, `react-markdown`, `mermaid`.
 - Interface em **português do Brasil**.
 - Telas: lista de projetos → criação/upload → processamento (progresso por etapas) → projeto com abas **Visão geral**, **Chat**, **Lado a lado**, **Isso faz?**, **Ideia × Código** e **Fluxos**.
+- No upload, cada fonte mostra o resumo da ingestão logo após o envio (arquivos usados, ignorados, tokens) e, se passar do limite, um aviso com a lista do que fica de fora. Fontes podem ser removidas.
+- No projeto, quando `base_outdated` for verdadeiro, um aviso "O material mudou" com botão **Reprocessar** aparece acima das abas.
 - Seletor de lente sempre visível e alternável a qualquer momento.
 - Ideia × Código em três colunas: ✅ prometido e implementado, ⚠️ prometido e não implementado, 🔍 implementado e não documentado.
 - Erros de cota (429) aparecem como aviso amigável, nunca como tela quebrada.
@@ -199,7 +216,8 @@ backend/
 │   │   ├── errors.py         # exceções de domínio (NotFound, QuotaExceeded, ...)
 │   │   └── logging.py
 │   ├── domain/               # modelos Pydantic puros: Lens, ProductBase, Evidence,
-│   │                         # Comparison, DoesItAnswer, Flow. Sem IO, sem imports internos.
+│   │                         # IdeaVsCode (visão agrupada da base), DoesItAnswer, Flow.
+│   │                         # Sem IO, sem imports internos.
 │   ├── db/
 │   │   ├── session.py        # engine e sessão
 │   │   ├── models/           # tabelas SQLAlchemy (ORM), um arquivo por agregado
@@ -306,7 +324,7 @@ frontend/src/
 
 - **Tem que funcionar em Windows, macOS e Linux.** Nada de comando que só existe em um sistema (Make, `rm -rf`, `export`, `&` no shell, caminhos com `/` fixos no Python — usar `pathlib`).
 - Pré-requisitos: `uv`, Node LTS, Git. O Python 3.12 é instalado pelo próprio `uv` (`.python-version` no backend). Ollama só se for usar o provedor local.
-- `.env.example` lista todas as variáveis: `LLM_PROVIDER`, `GEMINI_API_KEY`, `GEMINI_MODEL`, `OLLAMA_BASE_URL`, `OLLAMA_MODEL`, `DATABASE_URL`, `DATABASE_URL_DIRECT`, `MAX_CONTEXT_TOKENS`, `CHAT_MAX_FILES`, `CHAT_CONTEXT_TOKENS`, `MAX_UPLOAD_MB`, `MAX_UNZIPPED_MB`, `MAX_FILES`, `CORS_ORIGINS` e `TEST_DATABASE_URL` (só para testes de integração).
+- `.env.example` lista todas as variáveis: `LLM_PROVIDER`, `GEMINI_API_KEY`, `GEMINI_MODEL`, `OLLAMA_BASE_URL`, `OLLAMA_MODEL`, `DATABASE_URL`, `DATABASE_URL_DIRECT`, `MAX_CONTEXT_TOKENS`, `CHAT_MAX_FILES`, `CHAT_CONTEXT_TOKENS`, `CHAT_HISTORY_TURNS`, `MAX_UPLOAD_MB`, `MAX_UNZIPPED_MB`, `MAX_FILES`, `CORS_ORIGINS` e `TEST_DATABASE_URL` (só para testes de integração).
 - `.env` **nunca** vai para o Git (garantir no `.gitignore`).
 - **Comandos do projeto = scripts npm no `package.json` da raiz** (padrão do ecossistema, funciona igual em qualquer sistema, já que o Node é pré-requisito):
 
@@ -343,13 +361,13 @@ Marque `[x]` ao concluir cada item e atualize esta lista no mesmo commit.
 - [x] **Fase 0, base do projeto:** estrutura de pastas, `uv` + FastAPI com `/api/health`, Vite + React, `.env.example`, `.gitignore`, `.gitattributes`, `package.json` da raiz com os scripts, `README.md`, ruff/ESLint/Prettier configurados, `docs/architecture.md` e `CHANGELOG.md`
 - [x] **Fase 1, banco:** conexão com o Neon, models, primeira migração Alembic
 - [x] **Fase 2, provedor de IA:** `LLMProvider`, `GeminiProvider`, `OllamaProvider`, tratamento de 429
-- [ ] **Fase 3, ingestão:** upload, extração de texto, filtros, linhas numeradas, estimativa de tokens
-- [ ] **Fase 4, base do produto:** extração estruturada, validação de citações, progresso por SSE
+- [ ] **Fase 3, ingestão:** migração (remove `comparisons`, adiciona `projects.base_outdated`), criação de projeto, upload com ingestão na hora e resumo, remoção de fonte, extração de texto, filtros, linhas numeradas, estimativa de tokens e corte por prioridade
+- [ ] **Fase 4, base do produto:** extração em duas etapas (promessas da ideia → base do código com status), validação de citações com trecho curto, processamento em segundo plano e progresso por SSE
 - [ ] **Fase 5, MVP de lentes:** visão geral por lente (com cache) e chat com streaming
 - [ ] **Fase 6, frontend do MVP:** upload, processamento, seletor de lente, visão geral e chat
-- [ ] **Fase 7, lado a lado e "Isso faz?"**
-- [ ] **Fase 8, Ideia × Código**
-- [ ] **Fase 9, fluxo com Mermaid**
+- [ ] **Fase 7, lado a lado (uma chamada para as 3 lentes) e "Isso faz?"**
+- [ ] **Fase 8, Ideia × Código:** rota `GET` que agrupa a base por status e a tela em três colunas (sem chamada à IA)
+- [ ] **Fase 9, fluxo com Mermaid:** modelo devolve passos, nós e arestas; o backend monta o Mermaid
 - [ ] **Fase 10, demo:** app e escopo em `demo/`, rodar o fluxo completo de ponta a ponta
 - [ ] **Fase 11, qualidade:** rodar o conjunto de avaliação, ajustar prompts, acabamento visual, respostas da demo salvas como reserva
 
@@ -368,7 +386,7 @@ Marque `[x]` ao concluir cada item e atualize esta lista no mesmo commit.
   - **o que será criado ou atualizado nas docs** (`README.md`, `CHANGELOG.md`, `docs/*`, seção 11 deste arquivo);
   - como verificar que a fase terminou (critério de pronto).
 - Python: `ruff` (lint e formatação), type hints em tudo, `pytest`. Frontend: ESLint + Prettier, TypeScript estrito.
-- **Testes só no que é necessário.** Não sair testando tudo. Obrigatórios: ingestão (filtros, extração e limites do zip), validação de citações, parsing da saída estruturada e seleção de contexto. Fora disso, só teste de algo que já quebrou ou que é crítico na demo.
+- **Testes só no que é necessário.** Não sair testando tudo. Obrigatórios: ingestão (filtros, extração e limites do zip), validação de citações, parsing da saída estruturada, seleção de contexto (incluindo o corte por prioridade) e montagem do Mermaid. Fora disso, só teste de algo que já quebrou ou que é crítico na demo.
 - Chamadas ao modelo nos testes usam o `FakeProvider`, nunca a API real.
 - **Testes com banco:** poucos testes de integração, num branch separado do Neon (`TEST_DATABASE_URL`). Um engine por execução, cada teste dentro de uma transação desfeita no fim (rollback), sem criar/apagar tabelas a cada teste. Se o Neon ficar lento ou estourar limite, rever a estratégia (ex.: Postgres local).
 - Commits pequenos, no padrão Conventional Commits (`feat:`, `fix:`, `chore:`, `docs:`, `test:`, `refactor:`…).
@@ -421,6 +439,14 @@ Marque `[x]` ao concluir cada item e atualize esta lista no mesmo commit.
 | 2026-11-06 | Modelo `gemini-3.5-flash` (definido no `.env`, não no código) | O 3.8 (mais novo) deu 503 seguidos; o 3.5 respondeu, com streaming e JSON validados na API real |
 | 2026-11-06 | Health mostra a IA só pelo `.env`; `npm run llm:check` faz 1 chamada real, sob demanda | Não gastar cota a cada abertura da página |
 | 2026-11-06 | JSON inválido não gera nova tentativa | O Gemini garante o formato; repetir só gastaria cota. Rever se o Ollama errar muito |
+| 2026-11-06 | Ingestão no `POST /sources`; `/process` só faz a extração pela IA | Não havia onde guardar o arquivo original entre o envio e o processamento; a pessoa vê o tamanho do material antes de gastar cota |
+| 2026-11-06 | Material acima de `MAX_CONTEXT_TOKENS` entra por prioridade, e o que fica de fora é listado na tela | Comportamento previsível, sem corte silencioso; reaproveita o ranking do chat |
+| 2026-11-06 | Ideia × Código derivado da base (extração em duas etapas); tabela `comparisons` e `POST /idea-vs-code` removidos (ADR 0002) | Zero chamadas extras; "Isso faz?" e Ideia × Código leem o mesmo status e não se contradizem |
+| 2026-11-06 | Lado a lado em uma chamada com saída estruturada, sem streaming | 1/3 da cota, menos risco de 429/503 na demo e mesma essência garantida pela geração |
+| 2026-11-06 | Fluxo devolvido como JSON (passos, nós, arestas); o backend monta o Mermaid | Mermaid escrito pelo modelo quebra com frequência; as evidências dos passos passam pela validação |
+| 2026-11-06 | `DELETE /sources` e `projects.base_outdated`; a base anterior segue visível até reprocessar | Definir o que acontece quando o material muda depois do processamento |
+| 2026-11-06 | `quote` da evidência curto (~120 caracteres), conferido dentro do intervalo de linhas | Menos tokens de saída e menor risco de a base vir cortada |
+| 2026-11-06 | Visão geral sob demanda (primeira abertura de cada lente) e histórico do chat limitado por `CHAT_HISTORY_TURNS` | Processamento mais rápido e custo por pergunta previsível |
 
 ---
 

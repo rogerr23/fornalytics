@@ -162,7 +162,7 @@ Foram avaliados três caminhos:
 | **Formatos de arquivo** | PDF, docx, zip | Extrair o texto antes de enviar ao modelo; guardar só o texto |
 | **Consistência entre lentes** | Respostas não podem se contradizer | Base do produto única; todas as lentes derivam dela |
 | **Alucinação** | A IA pode inventar funcionalidades | Responder "não encontrei" quando faltar base; validação automática de citações |
-| **Diagramas** | Visualizar os fluxos | Saída em Mermaid renderizada na interface |
+| **Diagramas** | Visualizar os fluxos | A IA descreve os passos e as ligações; o sistema monta o diagrama Mermaid, que nunca sai quebrado |
 | **Limite do plano gratuito** | A cota de chamadas é pequena | Base e visões gerais salvas no banco; nova tentativa automática; aviso amigável |
 | **Confidencialidade** | O plano gratuito pode usar o conteúdo enviado | Usar apenas o repositório de demo próprio ou projetos open source |
 

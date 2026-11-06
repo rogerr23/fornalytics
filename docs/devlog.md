@@ -47,3 +47,11 @@ Uma entrada por sessão de trabalho: o que foi pedido, o que saiu, o que preciso
   - Nos testes reais, o Gemini gratuito devolveu **503 "alta demanda"** várias vezes (no 3.8 e no 3.5). A política foi estendida para tentar de novo também em 5xx; depois disso o `llm:check` se recuperou sozinho de um 503.
   - Linha vazia no `.env` (ex.: `LLM_PROVIDER=`) passou a valer como "não preenchida".
 - **Modelo escolhido:** `gemini-3.5-flash`.
+
+## 2026-11-06 — Revisão do fluxo do sistema
+
+- **Pedido:** reavaliar o fluxo de ponta a ponta antes da Fase 3 e ver as telas num protótipo.
+- **Resultado:** encontrada uma contradição (o `/process` fazia a ingestão, mas o arquivo original não tinha onde ficar entre o envio e o processamento) e 6 pontos de melhoria. Um protótipo navegável das 4 telas (projetos, envio, processamento e projeto com as 6 abas) ajudou a visualizar as mudanças antes de aprovar.
+- **Decisões:** ingestão no envio; corte por prioridade; Ideia × Código derivado da base, com extração em duas etapas (ADR 0002); lado a lado em uma chamada; fluxo em JSON com Mermaid montado no backend; remoção de fonte com aviso de base desatualizada; ajustes menores (trecho curto, visão geral sob demanda, histórico do chat limitado).
+- **Efeito na cota:** processar + Ideia × Código cai de 3–4 para 2 chamadas; o lado a lado, de 3 para 1.
+- **Próximo passo:** explicar a Fase 3, que começa pela migração que remove `comparisons` e adiciona `projects.base_outdated`.

@@ -3,6 +3,8 @@
 PostgreSQL no Neon, acessado com SQLAlchemy 2 assíncrono + psycopg 3. Migrações com Alembic.
 Código: `backend/app/db/models/` (tabelas) e `backend/app/domain/enums.py` (valores fixos).
 
+> **Mudança planejada (início da Fase 3, [ADR 0002](adr/0002-ideia-x-codigo-derivado-da-base.md)):** a tabela `comparisons` será removida (o Ideia × Código passa a sair da base) e `projects` ganha `base_outdated`. O diagrama e as tabelas abaixo já mostram o esquema de destino; até a migração, o banco ainda tem `comparisons`.
+
 ## Diagrama
 
 ```mermaid
@@ -11,8 +13,6 @@ erDiagram
     sources ||--o{ source_files : contem
     projects ||--o| product_bases : tem
     projects ||--o{ lens_cache : guarda
-    projects ||--o| comparisons : tem
-    product_bases ||--o{ comparisons : origina
     projects ||--o{ conversations : tem
     conversations ||--o{ messages : contem
 
@@ -21,6 +21,7 @@ erDiagram
         varchar name
         varchar status
         text status_detail
+        boolean base_outdated
         timestamptz created_at
     }
     sources {
@@ -52,13 +53,6 @@ erDiagram
         text content
         timestamptz created_at
     }
-    comparisons {
-        uuid id PK
-        uuid project_id FK "único"
-        uuid product_base_id FK
-        jsonb data
-        timestamptz created_at
-    }
     conversations {
         uuid id PK
         uuid project_id FK
@@ -79,12 +73,11 @@ erDiagram
 
 | Tabela | Para quê | Observações |
 |---|---|---|
-| `projects` | Um produto analisado | `status` acompanha o processamento (Fase 4) |
+| `projects` | Um produto analisado | `status` acompanha o processamento (Fase 4); `base_outdated` indica que as fontes mudaram depois da última base |
 | `sources` | Cada arquivo enviado ou texto colado | `filename` vazio para texto colado |
 | `source_files` | Texto extraído de cada arquivo (um zip gera vários) | Único por `source_id` + `path`; o arquivo original não é guardado |
-| `product_bases` | A base do produto em JSON | **Uma por projeto**: reprocessar substitui |
+| `product_bases` | A base do produto em JSON | **Uma por projeto**: reprocessar substitui. O Ideia × Código sai daqui (`features[].status`) |
 | `lens_cache` | Saídas em cache por lente (hoje só a visão geral) | Chave: projeto + lente + tipo |
-| `comparisons` | Resultado do Ideia × Código | **Uma por projeto**; aponta para a base que a gerou |
 | `conversations` / `messages` | Histórico do chat | `citations` guarda as citações já validadas |
 
 ## Valores aceitos
@@ -104,7 +97,8 @@ Guardados como texto, com uma regra (`CHECK`) no banco que recusa qualquer outro
 - **Ids** são UUID gerados pela aplicação.
 - **Datas** com fuso horário, preenchidas pelo banco (`now()`).
 - **Apagar um projeto apaga tudo que pertence a ele** (`ON DELETE CASCADE` em todas as chaves estrangeiras).
-- **Reprocessar um projeto** apaga `lens_cache` e `comparisons` dele na mesma transação que grava a nova base (Fase 4).
+- **Reprocessar um projeto** apaga o `lens_cache` dele e zera `base_outdated` na mesma transação que grava a nova base (Fase 4).
+- **Adicionar ou remover uma fonte** de um projeto que já tem base marca `base_outdated = true`; a base anterior continua valendo até o reprocessamento.
 - O formato dos campos `jsonb` é definido pelos modelos Pydantic de `app/domain/` (Fase 4 em diante).
 
 ## Conexões

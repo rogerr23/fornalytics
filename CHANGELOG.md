@@ -4,6 +4,15 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 
 ## [Não lançado]
 
+### Revisão do fluxo (antes da Fase 3)
+- Ingestão passa a acontecer no envio de cada fonte, com resumo imediato; o processamento faz só a extração pela IA.
+- Material acima do limite entra por prioridade, e o que fica de fora é listado na tela.
+- Ideia × Código derivado da base (extração em duas etapas); `comparisons` e `POST /idea-vs-code` saem do plano ([ADR 0002](docs/adr/0002-ideia-x-codigo-derivado-da-base.md)).
+- Lado a lado em uma chamada; fluxo como JSON com o Mermaid montado no backend.
+- Remoção de fonte e aviso de base desatualizada (`projects.base_outdated`).
+- Trecho de citação curto, visão geral sob demanda e histórico do chat limitado (`CHAT_HISTORY_TURNS`).
+- Atualizados `CLAUDE.md`, `docs/data-model.md`, `docs/architecture.md`, `docs/llm.md` e o documento de produto.
+
 ### Fase 2 — provedores de IA
 - Interface `LLMProvider` (`generate`, `stream`, `generate_json`) com `GeminiProvider` (google-genai), `OllamaProvider` (HTTP) e `FakeProvider` (testes).
 - `RetryingProvider`: novas tentativas em 429 e 5xx, até 3, sem esperar mais de 30s e sem repetir streaming já iniciado.
