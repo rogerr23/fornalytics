@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app import __version__
+from app.api.deps import get_llm_provider
 from app.api.routers import health
 from app.core.config import Settings, get_settings
 from app.core.errors import AppError, app_error_handler
@@ -19,9 +20,11 @@ API_PREFIX = "/api"
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
     yield
-    # Close pooled connections on shutdown, if the engine was ever created.
+    # Close pooled connections on shutdown, for whatever was actually created.
     if get_engine.cache_info().currsize:
         await get_engine().dispose()
+    if get_llm_provider.cache_info().currsize:
+        await get_llm_provider().aclose()
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:

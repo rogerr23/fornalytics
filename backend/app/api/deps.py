@@ -1,10 +1,14 @@
 """FastAPI dependencies: one place to build what routers and services need."""
 
 from collections.abc import AsyncIterator
+from functools import lru_cache
 
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 
+from app.core.config import get_settings
 from app.db.session import DatabaseNotConfigured, get_engine, get_sessionmaker
+from app.llm.base import LLMProvider
+from app.llm.factory import create_provider
 
 
 async def get_session() -> AsyncIterator[AsyncSession]:
@@ -18,3 +22,9 @@ def get_optional_engine() -> AsyncEngine | None:
         return get_engine()
     except DatabaseNotConfigured:
         return None
+
+
+@lru_cache
+def get_llm_provider() -> LLMProvider:
+    """One provider per process. Raises ProviderNotConfigured (503) if .env is incomplete."""
+    return create_provider(get_settings())
