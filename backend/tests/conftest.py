@@ -1,6 +1,7 @@
 """Shared fixtures. Database tests run on the Neon test branch and are skipped without it."""
 
 from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 import httpx
@@ -10,9 +11,9 @@ from alembic.config import Config
 from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_session
+from app.api.deps import get_session, get_session_factory
 from app.core.config import get_settings
-from app.db.session import create_engine
+from app.db.session import SessionFactory, create_engine
 from app.main import create_app
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
@@ -51,7 +52,18 @@ async def db_session(migrated_database: str) -> AsyncIterator[AsyncSession]:
 
 
 @pytest.fixture
-def app(db_session: AsyncSession) -> FastAPI:
+def shared_sessions(db_session: AsyncSession) -> SessionFactory:
+    """Session factory for background work and SSE that reuses the rolled-back test session."""
+
+    @asynccontextmanager
+    async def shared() -> AsyncIterator[AsyncSession]:
+        yield db_session
+
+    return shared
+
+
+@pytest.fixture
+def app(db_session: AsyncSession, shared_sessions: SessionFactory) -> FastAPI:
     """The app wired to the rolled-back test session (tests may add more overrides)."""
     app = create_app()
 
@@ -59,6 +71,7 @@ def app(db_session: AsyncSession) -> FastAPI:
         yield db_session
 
     app.dependency_overrides[get_session] = session_override
+    app.dependency_overrides[get_session_factory] = lambda: shared_sessions
     return app
 
 

@@ -1,6 +1,4 @@
 import uuid
-from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
 
 import httpx
 import pytest
@@ -8,8 +6,9 @@ from fastapi import FastAPI
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_processing_runner, get_session_factory
+from app.api.deps import get_processing_runner
 from app.db.models import LensCache
+from app.db.session import SessionFactory
 from app.domain.enums import CacheKind, Lens
 from app.extraction.extractor import ProductBaseExtractor
 from app.extraction.runner import ProcessingRunner
@@ -45,21 +44,15 @@ class IdleRunner(ProcessingRunner):
 
 
 @pytest.fixture
-def use_runner(app: FastAPI, db_session: AsyncSession):  # noqa: ANN201
+def use_runner(app: FastAPI, shared_sessions: SessionFactory):  # noqa: ANN201
     """Install a runner with a FakeProvider that shares the rolled-back test session."""
-
-    @asynccontextmanager
-    async def shared_session() -> AsyncIterator[AsyncSession]:
-        yield db_session
-
-    app.dependency_overrides[get_session_factory] = lambda: shared_session
 
     def install(
         responses: list[FakeResponse], runner_cls: type = ProcessingRunner
     ) -> ProcessingRunner:
         provider = FakeProvider(responses)
         extractor = ProductBaseExtractor(provider, PromptBuilder(), 200_000)
-        runner = runner_cls(shared_session, provider, extractor)
+        runner = runner_cls(shared_sessions, provider, extractor)
         app.dependency_overrides[get_processing_runner] = lambda: runner
         return runner
 
