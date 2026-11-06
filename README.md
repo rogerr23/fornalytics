@@ -55,7 +55,7 @@ npm run dev
 
 | Endereço | O que é |
 |---|---|
-| http://localhost:5173 | Aplicação (mostra se backend e banco estão ok) |
+| http://localhost:5173 | Aplicação (mostra se backend, banco e IA estão ok) |
 | http://localhost:8000/api/health | Saúde da API |
 | http://localhost:8000/docs | Documentação interativa da API |
 
@@ -76,6 +76,8 @@ Todos rodam a partir da raiz do projeto.
 | `npm run format` | Formata o código |
 | `npm run migrate` | Aplica as migrações do banco |
 | `npm run migration:new -- -m "descricao"` | Gera uma migração nova a partir dos models |
+| `npm run llm:check` | Confere a IA configurada (1 chamada real) |
+| `npm run llm:models` | Lista os modelos Flash do Gemini disponíveis para a sua chave |
 
 ---
 
@@ -91,6 +93,21 @@ O banco é um PostgreSQL gratuito no [Neon](https://neon.tech). Cada pessoa pode
 4. Cole as três no `.env` como vieram do Neon e rode `npm run migrate`.
 
 Sem `TEST_DATABASE_URL`, os testes de banco são pulados. Detalhes das tabelas em [`docs/data-model.md`](docs/data-model.md).
+
+---
+
+## IA (Gemini)
+
+A IA dentro do app é o Gemini no plano gratuito do Google AI Studio.
+
+1. Crie uma chave em https://aistudio.google.com/apikey (conta Google, sem cartão).
+2. No `.env`, preencha `GEMINI_API_KEY`. `LLM_PROVIDER=gemini` e `GEMINI_MODEL=gemini-3.5-flash` já vêm no exemplo.
+3. Confira (faz uma chamada real):
+   ```bash
+   npm run llm:check
+   ```
+
+Para ver os modelos disponíveis para a sua chave: `npm run llm:models`. Ollama (modelo local, opcional), limites e erros em [`docs/llm.md`](docs/llm.md).
 
 ---
 
@@ -110,6 +127,6 @@ Detalhes das camadas e das regras de código em [`docs/architecture.md`](docs/ar
 
 ## Variáveis de ambiente
 
-Todas estão listadas e comentadas em [`.env.example`](.env.example). Hoje só as do banco são necessárias; sem elas a API sobe, mas mostra "Banco: não configurado".
+Todas estão listadas e comentadas em [`.env.example`](.env.example). Hoje são necessárias as do banco e a `GEMINI_API_KEY`; sem elas a API sobe, mas a página inicial mostra o que falta.
 
 > O `.env` nunca vai para o Git.

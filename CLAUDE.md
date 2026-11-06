@@ -49,7 +49,7 @@ Contexto: protótipo do Programa de Estágio Extreme Group (Desafio de IA com Cl
 - Seleção por `LLM_PROVIDER=gemini|ollama`, **só manual** (sem fallback automático entre provedores). Deve ser fácil acrescentar um `ClaudeProvider` no futuro sem mexer no resto.
 - O Ollama é reserva para chat e visão geral; a extração da base e o Ideia × Código funcionam melhor no Gemini (modelos locais pequenos erram JSON estruturado). Documentar isso em `docs/llm.md`.
 - Métodos mínimos: `generate(system, messages) -> str`, `stream(system, messages) -> AsyncIterator[str]` e `generate_json(system, messages, schema: type[BaseModel]) -> BaseModel` (saída estruturada).
-- **Plano gratuito tem limite.** Tratar erro 429 com nova tentativa e espera exponencial (máx. 3 tentativas) e devolver uma mensagem amigável ao frontend.
+- **Plano gratuito tem limite e oscila.** Tratar erro 429 (cota) **e 5xx (alta demanda, comum no Gemini gratuito)** com nova tentativa e espera exponencial (máx. 3 tentativas, nunca esperar mais de 30s) e devolver uma mensagem amigável ao frontend. As novas tentativas do próprio SDK ficam desligadas. Detalhes em `docs/llm.md`.
 - **Economizar cota:** a extração da base roda uma vez por projeto e fica salva no banco. Visões gerais por lente também ficam em cache no banco.
 - O conteúdo enviado ao plano gratuito do Gemini pode ser usado pelo Google: **usar apenas o repositório de demo próprio ou projetos open source.**
 
@@ -208,8 +208,10 @@ backend/
 │   │   ├── base.py           # LLMProvider (interface)
 │   │   ├── gemini.py         # GeminiProvider (adapter do google-genai)
 │   │   ├── ollama.py         # OllamaProvider (adapter da API HTTP)
+│   │   ├── errors.py         # erros amigáveis + sinais internos de "tente de novo"
 │   │   ├── fake.py           # FakeProvider para testes
-│   │   ├── retry.py          # nova tentativa com espera exponencial no 429
+│   │   ├── retry.py          # RetryingProvider: nova tentativa no 429 e 5xx
+│   │   ├── check.py          # npm run llm:check / llm:models
 │   │   └── factory.py        # get_provider(settings) → LLMProvider
 │   ├── ingestion/
 │   │   ├── extractors/       # um extractor por formato (zip, pdf, docx, text)
@@ -256,6 +258,7 @@ api/routers ──▶ serviços (ingestion, extraction, lenses) ──▶ domain
 | Padrão | Onde | Para quê |
 |---|---|---|
 | Strategy + Adapter | `llm/` | Gemini, Ollama e futuramente Claude atrás da mesma interface |
+| Decorator | `llm/retry.py` | `RetryingProvider` envolve qualquer provedor com a política de novas tentativas |
 | Factory | `llm/factory.py` | Escolher o provedor pelo `LLM_PROVIDER` |
 | Registry | `ingestion/extractors/` | Escolher o extractor pela extensão do arquivo; formato novo = arquivo novo |
 | Repository | `db/repositories/` | Isolar o banco dos serviços |
@@ -339,7 +342,7 @@ Marque `[x]` ao concluir cada item e atualize esta lista no mesmo commit.
 
 - [x] **Fase 0, base do projeto:** estrutura de pastas, `uv` + FastAPI com `/api/health`, Vite + React, `.env.example`, `.gitignore`, `.gitattributes`, `package.json` da raiz com os scripts, `README.md`, ruff/ESLint/Prettier configurados, `docs/architecture.md` e `CHANGELOG.md`
 - [x] **Fase 1, banco:** conexão com o Neon, models, primeira migração Alembic
-- [ ] **Fase 2, provedor de IA:** `LLMProvider`, `GeminiProvider`, `OllamaProvider`, tratamento de 429
+- [x] **Fase 2, provedor de IA:** `LLMProvider`, `GeminiProvider`, `OllamaProvider`, tratamento de 429
 - [ ] **Fase 3, ingestão:** upload, extração de texto, filtros, linhas numeradas, estimativa de tokens
 - [ ] **Fase 4, base do produto:** extração estruturada, validação de citações, progresso por SSE
 - [ ] **Fase 5, MVP de lentes:** visão geral por lente (com cache) e chat com streaming
@@ -414,6 +417,10 @@ Marque `[x]` ao concluir cada item e atualize esta lista no mesmo commit.
 | 2026-11-06 | Ids UUID e valores fixos como texto + CHECK (não `ENUM` nativo) | UUID não expõe contagem e pode ser gerado antes de gravar; acrescentar valor vira migração simples |
 | 2026-11-06 | `product_bases` e `comparisons` com uma linha por projeto | Sem versionamento (decisão de 05/11); reprocessar substitui |
 | 2026-11-06 | `/api/health` informa o banco, mas a API sobe sem ele | Quem só quer ver a interface não precisa configurar o Neon |
+| 2026-11-06 | Novas tentativas também em 5xx (não só 429), via `RetryingProvider` (Decorator) | Nos testes reais o Gemini gratuito devolveu 503 "alta demanda" várias vezes; o erro costuma passar em segundos |
+| 2026-11-06 | Modelo `gemini-3.5-flash` (definido no `.env`, não no código) | O 3.8 (mais novo) deu 503 seguidos; o 3.5 respondeu, com streaming e JSON validados na API real |
+| 2026-11-06 | Health mostra a IA só pelo `.env`; `npm run llm:check` faz 1 chamada real, sob demanda | Não gastar cota a cada abertura da página |
+| 2026-11-06 | JSON inválido não gera nova tentativa | O Gemini garante o formato; repetir só gastaria cota. Rever se o Ollama errar muito |
 
 ---
 

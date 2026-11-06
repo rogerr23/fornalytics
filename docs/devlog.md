@@ -36,3 +36,14 @@ Uma entrada por sessão de trabalho: o que foi pedido, o que saiu, o que preciso
 - **Resultado:** 8 tabelas criadas no Neon pela migração inicial; health e página inicial mostram "Banco: ok"; testes de banco rodam no branch `test` com rollback (nenhum dado fica) e são pulados sem a URL.
 - **Ajustes no caminho:** o Neon perguntou por serviços extras (escolhido "Just Postgres") e o branch `test` vinha com apagamento automático para o dia seguinte (trocado para nunca). Na revisão da migração, o nome da restrição única composta foi corrigido e o ruff foi configurado para reconhecer o pacote `alembic`.
 - **Observação:** o FastAPI avisa nos testes que prefere `httpx2` ao `httpx`; é só aviso.
+
+## 2026-11-06 — Fase 2 (provedores de IA)
+
+- **Pedido:** criar a camada de IA (interface, Gemini, Ollama, Fake) com tratamento do limite gratuito.
+- **Resultado:** 20 testes sem rede; `llm:check` respondendo pelo Gemini; streaming e JSON estruturado validados na API real com uma pergunta do tipo "Isso faz?".
+- **Descobertas no caminho:**
+  - O `google-genai` instalado é a versão 3.0 (mais nova que a referência do Claude); a API foi conferida no próprio pacote antes de escrever o provedor.
+  - O SDK tem novas tentativas próprias; foram desligadas para não multiplicar chamadas com as nossas.
+  - Nos testes reais, o Gemini gratuito devolveu **503 "alta demanda"** várias vezes (no 3.8 e no 3.5). A política foi estendida para tentar de novo também em 5xx; depois disso o `llm:check` se recuperou sozinho de um 503.
+  - Linha vazia no `.env` (ex.: `LLM_PROVIDER=`) passou a valer como "não preenchida".
+- **Modelo escolhido:** `gemini-3.5-flash`.

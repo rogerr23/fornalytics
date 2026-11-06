@@ -9,7 +9,7 @@ A tabela completa (o que vai em cada doc e quando atualizar) está na seção 14
 | [adr/](adr/) | Ativo (modelo em `0000-template.md`; [0001 — camadas](adr/0001-arquitetura-em-camadas.md)) |
 | [architecture.md](architecture.md) | Ativo |
 | [data-model.md](data-model.md) | Ativo |
-| llm.md | A criar na Fase 2 |
+| [llm.md](llm.md) | Ativo |
 | ingestion.md | A criar na Fase 3 |
 | api-events.md | A criar na Fase 4 |
 | prompts.md | A criar na Fase 5 |

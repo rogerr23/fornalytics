@@ -4,6 +4,13 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 
 ## [Não lançado]
 
+### Fase 2 — provedores de IA
+- Interface `LLMProvider` (`generate`, `stream`, `generate_json`) com `GeminiProvider` (google-genai), `OllamaProvider` (HTTP) e `FakeProvider` (testes).
+- `RetryingProvider`: novas tentativas em 429 e 5xx, até 3, sem esperar mais de 30s e sem repetir streaming já iniciado.
+- Erros amigáveis em português (`QuotaExceeded`, `ProviderUnavailable`, `ProviderNotConfigured`, `InvalidModelOutput`).
+- `npm run llm:check` e `npm run llm:models`; `/api/health` e a página inicial mostram a IA configurada.
+- Modelo padrão `gemini-3.5-flash`; `docs/llm.md`.
+
 ### Fase 1 — banco de dados
 - Conexão assíncrona com PostgreSQL (SQLAlchemy 2 + psycopg 3), compatível com a conexão pooled do Neon.
 - 8 tabelas com ids UUID, datas com fuso, exclusão em cascata e valores fixos validados no banco.

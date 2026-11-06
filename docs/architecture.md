@@ -43,10 +43,10 @@ flowchart TD
 | Parte | Status | Fase |
 |---|---|---|
 | `create_app()`, configurações, erros, logging | ✅ | 0 |
-| `GET /api/health` (API e banco) | ✅ | 0 e 1 |
+| `GET /api/health` (API, banco e IA) | ✅ | 0, 1 e 2 |
 | Frontend com rotas, TanStack Query e Tailwind | ✅ | 0 |
 | Banco: sessão assíncrona, 8 tabelas, migração inicial, status no health | ✅ | 1 |
-| Provedores de IA | ⏳ | 2 |
+| Provedores de IA (Gemini, Ollama, Fake) com novas tentativas | ✅ | 2 |
 | Ingestão | ⏳ | 3 |
 | Base do produto e citações | ⏳ | 4 |
 | Lentes (visão geral e chat) | ⏳ | 5 |
