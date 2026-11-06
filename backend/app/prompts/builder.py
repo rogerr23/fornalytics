@@ -19,6 +19,7 @@ class Task(StrEnum):
     CHAT = "chat"
     COMPARE = "compare_lenses"
     DOES_IT = "does_it"
+    FLOW = "flow"
 
 
 @cache
