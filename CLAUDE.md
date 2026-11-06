@@ -176,7 +176,8 @@ fornalytics/
 ├── README.md                 # como rodar em qualquer computador
 ├── CHANGELOG.md              # o que entrou em cada fase
 ├── .env.example
-├── Makefile                  # make setup, make dev, make test, make lint, make migrate
+├── package.json              # só scripts: npm run setup, dev, test, lint, migrate (seção 9)
+├── .gitattributes            # quebras de linha LF em qualquer sistema
 ├── docs/                     # documentação viva (seção 14)
 ├── backend/
 ├── frontend/
@@ -298,10 +299,22 @@ frontend/src/
 
 ## 9. Portabilidade e ambiente
 
-- Pré-requisitos: Python 3.12, `uv`, Node LTS, Git. Ollama só se for usar o provedor local.
+- **Tem que funcionar em Windows, macOS e Linux.** Nada de comando que só existe em um sistema (Make, `rm -rf`, `export`, `&` no shell, caminhos com `/` fixos no Python — usar `pathlib`).
+- Pré-requisitos: `uv`, Node LTS, Git. O Python 3.12 é instalado pelo próprio `uv` (`.python-version` no backend). Ollama só se for usar o provedor local.
 - `.env.example` lista todas as variáveis: `LLM_PROVIDER`, `GEMINI_API_KEY`, `GEMINI_MODEL`, `OLLAMA_BASE_URL`, `OLLAMA_MODEL`, `DATABASE_URL`, `DATABASE_URL_DIRECT`, `MAX_CONTEXT_TOKENS`, `CHAT_MAX_FILES`, `CHAT_CONTEXT_TOKENS`, `MAX_UPLOAD_MB`, `MAX_UNZIPPED_MB`, `MAX_FILES`, `CORS_ORIGINS` e `TEST_DATABASE_URL` (só para testes de integração).
 - `.env` **nunca** vai para o Git (garantir no `.gitignore`).
-- `make setup` instala tudo; `make migrate` aplica as migrações; `make dev` sobe backend (porta 8000) e frontend (porta 5173).
+- **Comandos do projeto = scripts npm no `package.json` da raiz** (padrão do ecossistema, funciona igual em qualquer sistema, já que o Node é pré-requisito):
+
+  | Comando | O que faz |
+  |---|---|
+  | `npm run setup` | Instala backend (`uv sync`) e frontend (`npm install`) |
+  | `npm run dev` | Sobe backend (porta 8000) e frontend (porta 5173) juntos; Ctrl+C derruba os dois |
+  | `npm test` | Testes do backend e do frontend |
+  | `npm run lint` / `npm run format` | Confere / formata o código |
+  | `npm run migrate` | Aplica as migrações Alembic |
+
+- Os scripts chamam `uv --directory backend ...` e `npm --prefix frontend ...` (sem `cd`). Para rodar os dois servidores juntos, usar `concurrently` (dev, só na raiz).
+- `.gitattributes` com `* text=auto eol=lf`, para o Windows não trocar as quebras de linha.
 - O `README.md` deve permitir que outra pessoa rode o projeto do zero em outro computador.
 - Docker não é obrigatório: o banco já está na nuvem.
 
@@ -322,7 +335,7 @@ frontend/src/
 
 Marque `[x]` ao concluir cada item e atualize esta lista no mesmo commit.
 
-- [ ] **Fase 0, base do projeto:** estrutura de pastas, `uv` + FastAPI com `/api/health`, Vite + React, `.env.example`, `.gitignore`, `Makefile`, `README.md`, ruff/ESLint/Prettier configurados, `docs/architecture.md` e `CHANGELOG.md`
+- [ ] **Fase 0, base do projeto:** estrutura de pastas, `uv` + FastAPI com `/api/health`, Vite + React, `.env.example`, `.gitignore`, `.gitattributes`, `package.json` da raiz com os scripts, `README.md`, ruff/ESLint/Prettier configurados, `docs/architecture.md` e `CHANGELOG.md`
 - [ ] **Fase 1, banco:** conexão com o Neon, models, primeira migração Alembic
 - [ ] **Fase 2, provedor de IA:** `LLMProvider`, `GeminiProvider`, `OllamaProvider`, tratamento de 429
 - [ ] **Fase 3, ingestão:** upload, extração de texto, filtros, linhas numeradas, estimativa de tokens
@@ -341,6 +354,14 @@ Marque `[x]` ao concluir cada item e atualize esta lista no mesmo commit.
 
 - **Código, nomes de variáveis, commits e comentários técnicos em inglês.** Interface, prompts das lentes, README e documentação em português do Brasil.
 - Trabalhe **uma fase por vez**. Ao terminar, rode testes e lint, resuma o que foi feito e proponha o próximo passo.
+- **Antes de começar cada fase, explique ao Roger por completo e espere o ok dele:**
+  - objetivo da fase e como ela se encaixa no todo;
+  - o que vai ser feito, passo a passo;
+  - arquivos e pastas que serão criados ou alterados;
+  - dependências novas (se houver);
+  - testes que serão escritos;
+  - **o que será criado ou atualizado nas docs** (`README.md`, `CHANGELOG.md`, `docs/*`, seção 11 deste arquivo);
+  - como verificar que a fase terminou (critério de pronto).
 - Python: `ruff` (lint e formatação), type hints em tudo, `pytest`. Frontend: ESLint + Prettier, TypeScript estrito.
 - **Testes só no que é necessário.** Não sair testando tudo. Obrigatórios: ingestão (filtros, extração e limites do zip), validação de citações, parsing da saída estruturada e seleção de contexto. Fora disso, só teste de algo que já quebrou ou que é crítico na demo.
 - Chamadas ao modelo nos testes usam o `FakeProvider`, nunca a API real.
@@ -353,6 +374,7 @@ Marque `[x]` ao concluir cada item e atualize esta lista no mesmo commit.
 - **Dependências aprovadas** (além das citadas nas seções 3, 4, 5 e 7):
   - Backend: `fastapi`, `uvicorn[standard]`, `pydantic-settings`, `sqlalchemy[asyncio]`, `psycopg[binary]`, `alembic`, `python-multipart` (upload), `httpx` (Ollama), `pyyaml` (evals). Dev: `pytest`, `pytest-asyncio`, `ruff`.
   - Frontend: `react-router-dom`. Dev: `vitest`, `@testing-library/react`, `eslint`, `prettier`.
+  - Raiz (dev): `concurrently` (sobe backend e frontend juntos em qualquer sistema).
   - SSE feito com `StreamingResponse` do FastAPI no backend e `fetch` + leitura do stream no frontend, sem biblioteca extra.
 - **Antes de adicionar uma dependência fora das listadas aqui, pergunte.** Nunca adicione algo pago.
 - Se uma decisão nova for tomada, registre-a na seção 13 com data e motivo.
@@ -385,6 +407,8 @@ Marque `[x]` ao concluir cada item e atualize esta lista no mesmo commit.
 | 2026-11-05 | Limites de upload no `.env` (`MAX_UPLOAD_MB`, `MAX_UNZIPPED_MB`, `MAX_FILES`) | Proteger contra zip malicioso e ajustar sem mexer no código |
 | 2026-11-05 | Tokens estimados por caracteres ÷ 4 | Instantâneo, sem chamada à API, funciona com qualquer provedor |
 | 2026-11-05 | Modelos simples (enums, listas, objetos) na saída estruturada | Compatível com o subconjunto de JSON Schema do Gemini e mais fácil para o Ollama |
+| 2026-11-05 | Scripts npm na raiz (`npm run setup/dev/test/lint/migrate`) em vez de Makefile; suporte a Windows obrigatório | Haverá pessoas usando Windows, onde o Make não vem instalado; o Node já é pré-requisito |
+| 2026-11-05 | Frontend com ESLint (não o `oxlint` que o modelo novo do Vite traz) e TypeScript fixado em `~6.0` | Seguir o padrão definido; o `typescript-eslint` ainda não suporta o TypeScript 7. Rever quando suportar |
 
 ---
 

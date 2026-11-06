@@ -16,3 +16,15 @@ Uma entrada por sessão de trabalho: o que foi pedido, o que saiu, o que preciso
 - **Pedido:** debater os 12 pontos técnicos da seção 15 do `CLAUDE.md`.
 - **Resultado:** todos decididos e registrados na seção 13. Ajustes do Roger em relação às recomendações: limitar a quantidade de arquivos enviados no chat (`CHAT_MAX_FILES`) e manter os testes enxutos, só no essencial, cuidando para não sobrecarregar o Neon.
 - **Próximo passo:** Fase 0 (base do projeto).
+
+## 2026-11-05 — Makefile trocado por scripts npm
+
+- **Pedido:** Roger não conhecia o Make e avisou que haverá pessoas usando Windows.
+- **Resultado:** comandos do projeto passam a ser scripts npm no `package.json` da raiz; suporte a Windows virou regra (seção 9 do `CLAUDE.md`); `.gitattributes` para quebras de linha; Python instalado pelo próprio `uv`.
+
+## 2026-11-05 — Fase 0 (base do projeto)
+
+- **Pedido:** montar o esqueleto do projeto conforme a explicação aprovada.
+- **Resultado:** scripts npm na raiz, backend FastAPI com `/api/health` e teste, frontend com Tailwind, TanStack Query e React Router mostrando o status da API. Lint, formatação, build e teste passando; tela conferida no navegador.
+- **Correções no caminho:** o modelo atual do Vite trocou o ESLint pelo `oxlint` e veio com TypeScript 7, que o `typescript-eslint` ainda não suporta. Mantido o ESLint (padrão do projeto) com TypeScript fixado em 6.0.
+- **Pendente:** instalar o `uv` e rodar `npm run setup` para gerar o `uv.lock` e validar o fluxo oficial.
