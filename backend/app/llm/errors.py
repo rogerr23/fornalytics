@@ -18,11 +18,30 @@ class QuotaExceeded(LLMError):
     def __init__(self, retry_after: float | None = None) -> None:
         self.retry_after = retry_after
         message = "O limite gratuito da IA foi atingido."
-        if retry_after is not None:
-            message += f" Tente de novo em {math.ceil(retry_after)} segundos."
-        else:
+        if retry_after is None:
             message += " Tente de novo em alguns instantes."
+        elif retry_after >= DAILY_LIMIT_SECONDS:
+            message += (
+                f" É o limite diário do plano gratuito: tente de novo em {wait_text(retry_after)}."
+            )
+        else:
+            message += f" Tente de novo em {wait_text(retry_after)}."
         super().__init__(message)
+
+
+# A wait this long means the daily quota is over, not the per-minute one.
+DAILY_LIMIT_SECONDS = 3600
+
+
+def wait_text(seconds: float) -> str:
+    """'45 segundos', '3 minutos', 'cerca de 15 horas' (raw seconds are hard to read)."""
+    whole = math.ceil(seconds)
+    if whole < 120:
+        return f"{whole} segundos"
+    minutes = math.ceil(whole / 60)
+    if minutes < 120:
+        return f"{minutes} minutos"
+    return f"cerca de {round(whole / 3600)} horas"
 
 
 class ProviderUnavailable(LLMError):
