@@ -125,7 +125,7 @@ def overview_message(base: ProductBase) -> str:
     return f"## Base do produto (JSON)\n{render_base(base)}\n\nEscreva a visão geral."
 
 
-def chat_message(base: ProductBase, files: Sequence[StoredFile], question: str) -> str:
+def question_message(base: ProductBase, files: Sequence[StoredFile], question: str) -> str:
     material = render_files(files) if files else "(nenhum arquivo relevante encontrado)"
     return (
         f"## Base do produto (JSON)\n{render_base(base)}\n\n"

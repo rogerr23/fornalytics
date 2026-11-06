@@ -18,7 +18,7 @@ from app.domain.lenses import (
     StoredMessage,
 )
 from app.lenses.answer import AnswerStream, check_citations, load_base
-from app.lenses.context import chat_message, recent_history, select_chat_files
+from app.lenses.context import question_message, recent_history, select_chat_files
 from app.lenses.errors import ConversationNotFound
 from app.llm.base import ChatMessage, LLMProvider
 from app.prompts.builder import PromptBuilder, Task
@@ -80,7 +80,7 @@ class ChatService:
         )
         messages = [
             *recent_history(past, turns),
-            ChatMessage(role="user", content=chat_message(base.data, selected, question)),
+            ChatMessage(role="user", content=question_message(base.data, selected, question)),
         ]
         return PreparedChat(
             project_id=project_id,
