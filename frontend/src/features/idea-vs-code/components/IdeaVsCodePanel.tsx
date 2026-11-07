@@ -88,7 +88,9 @@ export function IdeaVsCodePanel({ projectId, onOpenCitation }: IdeaVsCodePanelPr
                 <Badge>{features.length}</Badge>
               </header>
               {features.length === 0 ? (
-                <p className="text-sm text-gray-500">{column.empty}</p>
+                <p className="text-sm text-gray-500">
+                  {data.state === 'available' ? column.empty : 'Sem promessas para comparar.'}
+                </p>
               ) : (
                 <ul className="flex flex-col gap-3">
                   {features.map((feature) => (

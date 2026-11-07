@@ -14,6 +14,8 @@ import { useStartProcessing } from '../features/processing/hooks/useProcessing'
 import { errorMessage } from '../shared/api/client'
 import type { TextCitation } from '../shared/api/lens'
 import { projectQuery } from '../shared/api/projects'
+import { formatTokens, plural } from '../shared/lib/format'
+import { useDocumentTitle } from '../shared/lib/useDocumentTitle'
 import { Alert } from '../shared/ui/Alert'
 import { Button } from '../shared/ui/Button'
 import { ProjectStatusBadge } from '../shared/ui/ProjectStatusBadge'
@@ -47,6 +49,7 @@ export function ProjectPage() {
 
   const tabParam = params.get('tab')
   const tab: Tab = isActiveTab(tabParam) ? tabParam : 'overview'
+  useDocumentTitle(TABS.find((item) => item.value === tab)?.label, project.data?.name)
 
   if (project.isPending) return <Spinner label="Carregando o projeto…" />
   if (project.isError) return <Alert tone="error">{errorMessage(project.error)}</Alert>
@@ -69,12 +72,16 @@ export function ProjectPage() {
               <h1 className="text-2xl font-bold text-gray-900">{detail.name}</h1>
               <ProjectStatusBadge status={detail.status} />
             </div>
-            <Link
-              to={`/projects/${projectId}/material`}
-              className="text-sm text-indigo-700 hover:underline"
-            >
-              Ver ou editar o material
-            </Link>
+            <p className="text-sm text-gray-500">
+              {plural(detail.sources.length, 'fonte')} ·{' '}
+              {formatTokens(detail.sources.reduce((total, s) => total + s.token_estimate, 0))} ·{' '}
+              <Link
+                to={`/projects/${projectId}/material`}
+                className="text-indigo-700 hover:underline"
+              >
+                ver ou editar o material
+              </Link>
+            </p>
           </div>
           <LensSelector />
         </div>

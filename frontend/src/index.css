@@ -1,1 +1,14 @@
 @import 'tailwindcss';
+
+@layer base {
+  html {
+    color-scheme: light;
+  }
+
+  /* Visible focus for keyboard navigation, everywhere. */
+  :focus-visible {
+    outline: 2px solid var(--color-indigo-500);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}

@@ -5,6 +5,7 @@ import { CreateProjectForm } from '../features/projects/components/CreateProject
 import { MaterialEditor } from '../features/upload/components/MaterialEditor'
 import { errorMessage } from '../shared/api/client'
 import { projectQuery } from '../shared/api/projects'
+import { useDocumentTitle } from '../shared/lib/useDocumentTitle'
 import { Alert } from '../shared/ui/Alert'
 import { Button } from '../shared/ui/Button'
 import { Card } from '../shared/ui/Card'
@@ -14,6 +15,7 @@ import { Spinner } from '../shared/ui/Spinner'
 export function NewProjectPage() {
   const { projectId } = useParams()
   const navigate = useNavigate()
+  useDocumentTitle(projectId ? null : 'Novo projeto')
 
   if (!projectId) {
     return (
@@ -34,6 +36,7 @@ function MaterialStep({ projectId }: { projectId: string }) {
   const navigate = useNavigate()
   const project = useQuery(projectQuery(projectId))
   const start = useStartProcessing(projectId)
+  useDocumentTitle('Material', project.data?.name)
 
   if (project.isPending) return <Spinner label="Carregando o projeto…" />
   if (project.isError) return <Alert tone="error">{errorMessage(project.error)}</Alert>

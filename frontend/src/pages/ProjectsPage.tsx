@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom'
 import { HealthStatus } from '../features/health/components/HealthStatus'
 import { ProjectList } from '../features/projects/components/ProjectList'
+import { useDocumentTitle } from '../shared/lib/useDocumentTitle'
 import { Button } from '../shared/ui/Button'
 
 export function ProjectsPage() {
+  useDocumentTitle('Projetos')
   return (
     <>
       <div className="flex items-end justify-between gap-4">
