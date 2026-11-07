@@ -3,6 +3,8 @@ import { errorMessage } from '../../../shared/api/client'
 import type { SourceType } from '../../../shared/api/projects'
 import { Alert } from '../../../shared/ui/Alert'
 import { Button } from '../../../shared/ui/Button'
+import { Dropzone } from '../../../shared/ui/Dropzone'
+import { FIELD, LABEL } from '../../../shared/ui/field'
 import { Tabs } from '../../../shared/ui/Tabs'
 import { useAddSource } from '../hooks/useSources'
 import type { IngestionSummary, NewSource } from '../types'
@@ -10,14 +12,11 @@ import type { IngestionSummary, NewSource } from '../types'
 type Mode = 'code' | 'github' | 'document' | 'text'
 
 const MODES = [
-  { value: 'code' as const, label: 'Código (.zip)' },
-  { value: 'github' as const, label: 'Link do GitHub' },
-  { value: 'document' as const, label: 'Documento' },
-  { value: 'text' as const, label: 'Colar texto' },
+  { value: 'code' as const, label: 'Código (.zip)', icon: 'folder' as const },
+  { value: 'github' as const, label: 'Link do GitHub', icon: 'link' as const },
+  { value: 'document' as const, label: 'Documento', icon: 'file' as const },
+  { value: 'text' as const, label: 'Colar texto', icon: 'text' as const },
 ]
-
-const FIELD =
-  'rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none'
 
 interface SourceUploaderProps {
   projectId: string
@@ -77,16 +76,11 @@ export function SourceUploader({ projectId, disabled, onUploaded }: SourceUpload
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-4">
-      <Tabs items={MODES} value={mode} onChange={changeMode} />
+      <Tabs items={MODES} value={mode} onChange={changeMode} label="Tipo de material" wrap />
 
-      {mode === 'code' && (
-        <p className="text-sm text-gray-600">
-          Um .zip do repositório. Pastas como node_modules e .git, binários, lockfiles e arquivos
-          .env são ignorados automaticamente.
-        </p>
-      )}
       {mode === 'github' && (
-        <div className="flex flex-col gap-1.5">
+        <label className={LABEL}>
+          Link do repositório
           <input
             type="text"
             inputMode="url"
@@ -95,18 +89,17 @@ export function SourceUploader({ projectId, disabled, onUploaded }: SourceUpload
             value={url}
             onChange={(event) => setUrl(event.target.value)}
             placeholder="https://github.com/dono/repositorio"
-            aria-label="Link do repositório no GitHub"
-            className={FIELD}
+            className={`${FIELD} font-mono`}
           />
-          <p className="text-sm text-gray-600">
+          <span className="text-[13px] font-normal text-grey-500">
             Só repositórios públicos. Serve o link do repositório ou de um branch, terminado em{' '}
             <code>/tree/nome-do-branch</code>. O repositório é baixado como .zip e passa pelos
             mesmos filtros do envio.
-          </p>
-        </div>
+          </span>
+        </label>
       )}
       {mode === 'document' && (
-        <label className="flex flex-col gap-1.5 text-sm font-medium text-gray-700">
+        <label className={LABEL}>
           O que é este documento?
           <select
             value={documentType}
@@ -119,12 +112,17 @@ export function SourceUploader({ projectId, disabled, onUploaded }: SourceUpload
         </label>
       )}
       {(mode === 'code' || mode === 'document') && (
-        <input
+        <Dropzone
           key={inputKey}
-          type="file"
           accept={mode === 'code' ? '.zip' : '.pdf,.docx,.md,.txt'}
-          onChange={(event) => setFile(event.target.files?.[0] ?? null)}
-          className="text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-indigo-50 file:px-3 file:py-2 file:font-medium file:text-indigo-700 hover:file:bg-indigo-100"
+          hint={
+            mode === 'code'
+              ? 'Um .zip do repositório. node_modules, .git, binários, lockfiles e .env são ignorados.'
+              : 'PDF, DOCX, MD ou TXT, até 20 MB.'
+          }
+          file={file}
+          disabled={disabled}
+          onFile={setFile}
         />
       )}
       {mode === 'text' && (
@@ -134,11 +132,13 @@ export function SourceUploader({ projectId, disabled, onUploaded }: SourceUpload
               value={title}
               onChange={(event) => setTitle(event.target.value)}
               placeholder="Título (opcional)"
-              className={`${FIELD} flex-1`}
+              aria-label="Título"
+              className={`${FIELD} min-w-0 flex-1 basis-48`}
             />
             <select
               value={textType}
               onChange={(event) => setTextType(event.target.value as SourceType)}
+              aria-label="Tipo do texto"
               className={FIELD}
             >
               <option value="text">Texto livre</option>
@@ -148,7 +148,8 @@ export function SourceUploader({ projectId, disabled, onUploaded }: SourceUpload
           <textarea
             value={content}
             onChange={(event) => setContent(event.target.value)}
-            rows={6}
+            rows={7}
+            aria-label="Texto"
             placeholder="Cole aqui a descrição da ideia, o escopo ou a transcrição…"
             className={FIELD}
           />

@@ -3,6 +3,7 @@ import { LENS_LABEL, type Lens, type TextCitation } from '../../../shared/api/le
 import { Alert } from '../../../shared/ui/Alert'
 import { AnswerMarkdown } from '../../../shared/ui/AnswerMarkdown'
 import { Button } from '../../../shared/ui/Button'
+import { SkeletonText } from '../../../shared/ui/Skeleton'
 import { Spinner } from '../../../shared/ui/Spinner'
 import { useOverview } from '../hooks/useOverview'
 
@@ -35,7 +36,10 @@ export function OverviewPanel({ projectId, lens, onOpenCitation }: OverviewPanel
   return (
     <div className="flex flex-col gap-4">
       {(!answer || (!answer.text && !answer.error)) && (
-        <Spinner label={`Escrevendo a visão geral na lente ${LENS_LABEL[lens]}…`} />
+        <div className="flex max-w-[72ch] flex-col gap-4">
+          <Spinner label={`Escrevendo a visão geral na lente ${LENS_LABEL[lens]}…`} />
+          <SkeletonText lines={5} label="Visão geral em preparação" />
+        </div>
       )}
       {answer?.text && (
         <AnswerMarkdown

@@ -23,7 +23,7 @@ export function FlowsPanel({ projectId, lens, onOpenCitation }: FlowsPanelProps)
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-3">
-        <p className="text-sm text-gray-500">
+        <p className="max-w-2xl text-sm text-grey-500">
           Pergunte o que acontece em uma situação e veja o passo a passo com diagrama. Os fluxos da
           base aparecem abaixo sem gastar cota da IA.
         </p>
@@ -43,11 +43,13 @@ export function FlowsPanel({ projectId, lens, onOpenCitation }: FlowsPanelProps)
       ))}
 
       <section className="flex flex-col gap-4">
-        <h2 className="font-semibold text-gray-900">Fluxos da base do produto</h2>
+        <h2 className="text-xl font-light tracking-tight">
+          Fluxos da <strong className="font-extrabold">base do produto</strong>
+        </h2>
         {baseFlows.isPending && <Spinner label="Carregando os fluxos…" />}
         {baseFlows.isError && <Alert tone="error">{errorMessage(baseFlows.error)}</Alert>}
         {baseFlows.data?.length === 0 && (
-          <p className="text-sm text-gray-500">A base não registrou fluxos para este produto.</p>
+          <p className="text-sm text-grey-500">A base não registrou fluxos para este produto.</p>
         )}
         {baseFlows.data?.map((flow) => (
           <FlowCard key={`base-${flow.name}`} flow={flow} onOpenCitation={onOpenCitation} />

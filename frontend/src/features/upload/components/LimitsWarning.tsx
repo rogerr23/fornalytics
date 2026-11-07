@@ -19,10 +19,10 @@ export function LimitsWarning({ limits }: { limits: Limits }) {
       </p>
       {groups.map(({ label, group }) => (
         <details key={label} className="mt-2">
-          <summary className="cursor-pointer font-medium">
+          <summary className="cursor-pointer font-semibold text-ink">
             {label}: {group.excluded.length} de fora ({formatTokens(group.total_tokens)} no total)
           </summary>
-          <ul className="mt-1 max-h-40 overflow-y-auto pl-4 font-mono text-xs">
+          <ul className="mt-2 max-h-40 overflow-y-auto rounded border border-grey-200 bg-white p-3 font-mono text-xs">
             {group.excluded.map((file) => (
               <li key={file.path}>{file.path}</li>
             ))}

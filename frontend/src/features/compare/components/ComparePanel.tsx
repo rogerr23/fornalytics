@@ -30,7 +30,7 @@ export function ComparePanel({ projectId, onOpenCitation }: ComparePanelProps) {
 
   return (
     <div className="flex flex-col gap-6">
-      <p className="text-sm text-gray-500">
+      <p className="max-w-2xl text-sm text-grey-500">
         Uma pergunta, três explicações. As lentes mudam a forma, nunca a essência.
       </p>
       <QuestionForm
@@ -44,19 +44,21 @@ export function ComparePanel({ projectId, onOpenCitation }: ComparePanelProps) {
       {compare.isError && <Alert tone="error">{errorMessage(compare.error)}</Alert>}
 
       {results.map((result, index) => (
-        <section key={`${index}-${result.question}`} className="flex flex-col gap-3">
-          <h3 className="font-semibold text-gray-900">{result.question}</h3>
-          <div className="grid gap-4 lg:grid-cols-3">
-            {LENSES.map(({ value, label, hint }) => {
+        <section key={`${index}-${result.question}`} className="flex flex-col gap-4">
+          <h3 className="text-xl font-bold tracking-tight">{result.question}</h3>
+          <div className="grid gap-6 lg:grid-cols-3">
+            {LENSES.map(({ value, label, hint }, lensIndex) => {
               const answer = result.answers.find((item) => item.lens === value)
               return (
-                <article
-                  key={value}
-                  className="flex flex-col gap-2 rounded-xl border border-gray-200 bg-white p-4"
-                >
-                  <header>
-                    <p className="font-semibold text-indigo-700">{label}</p>
-                    <p className="text-xs text-gray-500">{hint}</p>
+                <article key={value} className="flex flex-col gap-3 border-t border-ink pt-4">
+                  <header className="flex items-baseline gap-3">
+                    <span className="text-2xl font-bold text-grey-500">
+                      {String(lensIndex + 1).padStart(2, '0')}
+                    </span>
+                    <div>
+                      <p className="font-bold">{label}</p>
+                      <p className="text-xs text-grey-500">{hint}</p>
+                    </div>
                   </header>
                   {answer && (
                     <AnswerMarkdown

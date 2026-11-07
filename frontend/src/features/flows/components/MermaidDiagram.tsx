@@ -8,7 +8,19 @@ let loading: Promise<MermaidApi> | null = null
 /** Mermaid is large: it is loaded only when the first diagram appears. */
 function loadMermaid(): Promise<MermaidApi> {
   loading ??= import('mermaid').then(({ default: mermaid }) => {
-    mermaid.initialize({ startOnLoad: false, securityLevel: 'strict', theme: 'neutral' })
+    mermaid.initialize({
+      startOnLoad: false,
+      securityLevel: 'strict',
+      theme: 'base',
+      themeVariables: {
+        fontFamily: 'Montserrat Variable, sans-serif',
+        primaryColor: '#ffffff',
+        primaryBorderColor: '#000000',
+        primaryTextColor: '#000000',
+        lineColor: '#4a4a4a',
+        edgeLabelBackground: '#f3f3f3',
+      },
+    })
     return mermaid
   })
   return loading
@@ -40,10 +52,10 @@ export function MermaidDiagram({ text }: { text: string }) {
   if (state.status === 'failed') {
     return (
       <div className="flex flex-col gap-1">
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-grey-500">
           Não foi possível desenhar o diagrama. Texto do fluxo:
         </p>
-        <pre className="overflow-x-auto rounded-lg bg-gray-50 p-3 text-xs text-gray-700">
+        <pre className="overflow-x-auto rounded-lg border border-grey-200 bg-grey-50 p-3 text-xs text-ink-600">
           {text}
         </pre>
       </div>
@@ -51,7 +63,7 @@ export function MermaidDiagram({ text }: { text: string }) {
   }
   return (
     <div
-      className="flex justify-center overflow-x-auto rounded-lg bg-gray-50 p-3 [&_svg]:max-w-full"
+      className="flex justify-center overflow-x-auto rounded-lg border border-grey-200 bg-grey-50 p-4 [&_svg]:max-w-full"
       // The SVG comes from Mermaid in strict mode, built from text escaped by the backend.
       dangerouslySetInnerHTML={{ __html: state.svg }}
     />

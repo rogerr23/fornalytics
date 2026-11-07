@@ -4,6 +4,7 @@ import { useSessionHistory } from '../../../shared/api/sessionHistory'
 import { citationLabel } from '../../../shared/lib/citations'
 import { FEATURE_STATUS_TEXT } from '../../../shared/lib/featureStatus'
 import { Alert } from '../../../shared/ui/Alert'
+import { Icon } from '../../../shared/ui/Icon'
 import { QuestionForm } from '../../../shared/ui/QuestionForm'
 import { Spinner } from '../../../shared/ui/Spinner'
 import { useDoesIt } from '../hooks/useDoesIt'
@@ -32,7 +33,7 @@ export function DoesItPanel({ projectId, lens, onOpenCitation }: DoesItPanelProp
 
   return (
     <div className="flex flex-col gap-6">
-      <p className="text-sm text-gray-500">
+      <p className="max-w-2xl text-sm text-grey-500">
         Pergunte se o produto faz algo. A resposta segue o que a base encontrou no código e no
         documento da ideia.
       </p>
@@ -66,42 +67,44 @@ function VerdictCard({
 }) {
   const view = VERDICT_VIEW[result.verdict]
   return (
-    <article className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-5">
-      <p className="text-sm text-gray-500">{result.question}</p>
-      <div className={`flex items-center gap-3 rounded-lg border px-4 py-3 ${view.className}`}>
-        <span className="text-2xl" aria-hidden>
-          {view.icon}
+    <article className="flex flex-col gap-4 rounded-lg border border-grey-200 bg-white p-6">
+      <p className="eyebrow text-grey-500">{result.question}</p>
+      <div className={`flex items-center gap-4 rounded-lg border px-5 py-4 ${view.className}`}>
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded bg-white">
+          <Icon name={view.icon} size={24} />
         </span>
         <div>
-          <p className="text-xl font-bold">{view.label}</p>
+          <p className="text-3xl leading-tight font-extrabold tracking-tight">{view.label}</p>
           {result.feature && (
-            <p className="text-sm">
+            <p className="text-sm text-ink">
               {result.feature.name}: {FEATURE_STATUS_TEXT[result.feature.status]}
             </p>
           )}
         </div>
       </div>
-      <p className="text-[15px] leading-relaxed text-gray-800">{result.justification}</p>
+      <p className="max-w-[72ch] text-[15px] leading-relaxed text-ink-800">
+        {result.justification}
+      </p>
       {result.adjusted && (
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-grey-500">
           A resposta foi ajustada para bater com a base do produto (a mesma do Ideia × Código).
         </p>
       )}
       {result.evidence.length > 0 && (
         <div className="flex flex-col gap-1.5">
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Evidências</p>
+          <p className="eyebrow text-grey-500">Evidências</p>
           <ul className="flex flex-col gap-1.5">
             {result.evidence.map((evidence) => (
               <li key={`${evidence.path}:${evidence.line_start}`}>
                 <button
                   type="button"
                   onClick={() => onOpenCitation(evidenceToCitation(evidence))}
-                  className="flex w-full flex-col items-start gap-0.5 rounded-lg bg-gray-50 px-3 py-2 text-left hover:bg-indigo-50"
+                  className="flex w-full flex-col items-start gap-1 rounded border border-grey-200 bg-grey-50 px-3.5 py-2.5 text-left transition-colors duration-150 hover:border-ink"
                 >
-                  <span className="font-mono text-xs text-indigo-700">
+                  <span className="font-mono text-xs font-semibold text-ink underline underline-offset-3">
                     {citationLabel(evidence.path, evidence.line_start, evidence.line_end)}
                   </span>
-                  <span className="font-mono text-xs text-gray-600">“{evidence.quote}”</span>
+                  <span className="font-mono text-xs text-grey-500">“{evidence.quote}”</span>
                 </button>
               </li>
             ))}

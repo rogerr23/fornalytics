@@ -1,1 +1,97 @@
+@import '@fontsource-variable/montserrat';
 @import 'tailwindcss';
+
+/*
+ * Visual identity: Extreme Group Design System (see docs/design.md).
+ * Default Tailwind colors are reset, so only these tokens exist: a stray
+ * `bg-indigo-600` produces no style instead of an off-brand color.
+ */
+@theme {
+  --color-*: initial;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  /* Neutrals: the brand is black, grey and white. */
+  --color-ink: #000000;
+  --color-ink-800: #1a1a1a;
+  --color-ink-700: #2e2e2e;
+  --color-ink-600: #4a4a4a;
+  --color-grey-500: #6b767f;
+  --color-grey-400: #90a0ad; /* steel: large numerals only (low contrast on white) */
+  --color-grey-300: #c9d1d7;
+  --color-grey-250: #dde2e6;
+  --color-grey-200: #e8ebee;
+  --color-grey-100: #f3f3f3;
+  --color-grey-50: #fafafa;
+
+  /* Status, desaturated to sit inside the monochrome system. */
+  --color-success: #1f7a4d;
+  --color-success-tint: #e8f3ed;
+  --color-warning: #8a5800;
+  --color-warning-tint: #faf1e0;
+  --color-danger: #b3261e;
+  --color-danger-tint: #fbeae9;
+  --color-info: #14145a;
+  --color-info-tint: #e7e7f0;
+
+  --font-sans:
+    'Montserrat Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial,
+    sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+
+  /* Hard-edged brand: 4px controls, 8px cards, pill only for tags. */
+  --radius-sm: 2px;
+  --radius: 4px;
+  --radius-md: 4px;
+  --radius-lg: 8px;
+
+  --shadow-float: 0 4px 14px rgba(0, 0, 0, 0.08);
+  --shadow-panel: 0 12px 32px rgba(0, 0, 0, 0.12);
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+  }
+  body {
+    @apply bg-white font-sans text-[15px] leading-relaxed text-ink antialiased;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap: balance;
+  }
+  ::selection {
+    @apply bg-ink text-white;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 2px;
+  }
+  .on-dark :focus-visible {
+    outline-color: var(--color-white);
+  }
+}
+
+@utility eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

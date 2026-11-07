@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useCallback, useState } from 'react'
-import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { ChatPanel } from '../features/chat/components/ChatPanel'
 import { ComparePanel } from '../features/compare/components/ComparePanel'
 import { DoesItPanel } from '../features/does-it/components/DoesItPanel'
@@ -15,20 +15,23 @@ import { errorMessage } from '../shared/api/client'
 import type { TextCitation } from '../shared/api/lens'
 import { projectQuery } from '../shared/api/projects'
 import { Alert } from '../shared/ui/Alert'
-import { Button } from '../shared/ui/Button'
+import { Button, ButtonLink } from '../shared/ui/Button'
+import { Icon } from '../shared/ui/Icon'
+import { Breadcrumbs, HeroBand, PageBody, Stat } from '../shared/ui/Page'
 import { ProjectStatusBadge } from '../shared/ui/ProjectStatusBadge'
-import { Spinner } from '../shared/ui/Spinner'
+import { SkeletonText } from '../shared/ui/Skeleton'
+import { formatTokens } from '../shared/lib/format'
 import { Tabs, type TabItem } from '../shared/ui/Tabs'
 
 type Tab = 'overview' | 'chat' | 'compare' | 'does-it' | 'idea-vs-code' | 'flows'
 
 const TABS: TabItem<Tab>[] = [
-  { value: 'overview', label: 'Visão geral' },
-  { value: 'chat', label: 'Chat' },
-  { value: 'compare', label: 'Lado a lado' },
-  { value: 'does-it', label: 'Isso faz?' },
-  { value: 'idea-vs-code', label: 'Ideia × Código' },
-  { value: 'flows', label: 'Fluxos' },
+  { value: 'overview', label: 'Visão geral', icon: 'info' },
+  { value: 'chat', label: 'Chat', icon: 'chat' },
+  { value: 'compare', label: 'Lado a lado', icon: 'layers' },
+  { value: 'does-it', label: 'Isso faz?', icon: 'search' },
+  { value: 'idea-vs-code', label: 'Ideia × Código', icon: 'check' },
+  { value: 'flows', label: 'Fluxos', icon: 'flow' },
 ]
 
 function isActiveTab(value: string | null): value is Tab {
@@ -48,37 +51,65 @@ export function ProjectPage() {
   const tabParam = params.get('tab')
   const tab: Tab = isActiveTab(tabParam) ? tabParam : 'overview'
 
-  if (project.isPending) return <Spinner label="Carregando o projeto…" />
-  if (project.isError) return <Alert tone="error">{errorMessage(project.error)}</Alert>
+  if (project.isPending) {
+    return (
+      <PageBody>
+        <SkeletonText lines={3} label="Carregando o projeto…" />
+      </PageBody>
+    )
+  }
+  if (project.isError) {
+    return (
+      <PageBody>
+        <Alert tone="error">{errorMessage(project.error)}</Alert>
+      </PageBody>
+    )
+  }
   const detail = project.data
   if (detail.status === 'processing') {
     return <Navigate to={`/projects/${projectId}/processing`} replace />
   }
 
+  const files = detail.sources.reduce((total, source) => total + source.file_count, 0)
+  const tokens = detail.sources.reduce((total, source) => total + source.token_estimate, 0)
+
   return (
     <>
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="text-sm text-gray-500">
-              <Link to="/" className="hover:underline">
-                Projetos
-              </Link>
-            </p>
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-gray-900">{detail.name}</h1>
+      <HeroBand>
+        <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-8">
+          <div className="flex min-w-0 flex-col gap-3">
+            <Breadcrumbs inverse items={[{ label: 'Projetos', to: '/' }, { label: detail.name }]} />
+            <h1 className="text-4xl leading-[1.04] font-extrabold tracking-tight break-words sm:text-6xl">
+              {detail.name}
+            </h1>
+            <div className="flex flex-wrap items-center gap-3">
               <ProjectStatusBadge status={detail.status} />
+              <ButtonLink to={`/projects/${projectId}/material`} variant="ghostInverse" size="sm">
+                Ver ou editar o material
+                <Icon name="arrow" size={16} />
+              </ButtonLink>
             </div>
-            <Link
-              to={`/projects/${projectId}/material`}
-              className="text-sm text-indigo-700 hover:underline"
-            >
-              Ver ou editar o material
-            </Link>
           </div>
-          <LensSelector />
+          <div className="flex flex-wrap gap-x-10 gap-y-6">
+            <Stat
+              inverse
+              value={String(detail.sources.length)}
+              strong="Fontes"
+              rest="de material"
+            />
+            <Stat inverse value={String(files)} strong="Arquivos" rest="analisados" />
+            <Stat
+              inverse
+              value={formatTokens(tokens).replace(' tokens', '')}
+              strong="Tokens"
+              rest="estimados"
+            />
+          </div>
         </div>
+        <LensSelector inverse />
+      </HeroBand>
 
+      <PageBody className="gap-6">
         {detail.base_outdated && (
           <Alert
             tone="warning"
@@ -93,6 +124,7 @@ export function ProjectPage() {
                   })
                 }
               >
+                <Icon name="refresh" size={16} />
                 Reprocessar
               </Button>
             }
@@ -106,30 +138,37 @@ export function ProjectPage() {
           </Alert>
         )}
         {reprocess.isError && <Alert tone="error">{errorMessage(reprocess.error)}</Alert>}
-      </div>
 
-      <Tabs
-        items={TABS}
-        value={tab}
-        onChange={(next) => setParams({ tab: next }, { replace: true })}
-      />
+        <Tabs
+          items={TABS}
+          value={tab}
+          label="Abas do projeto"
+          onChange={(next) => setParams({ tab: next }, { replace: true })}
+        />
 
-      {tab === 'overview' && (
-        <OverviewPanel projectId={projectId} lens={lens} onOpenCitation={setCitation} />
-      )}
-      {tab === 'chat' && (
-        <ChatPanel projectId={projectId} lens={lens} onOpenCitation={setCitation} />
-      )}
-      {tab === 'compare' && <ComparePanel projectId={projectId} onOpenCitation={setCitation} />}
-      {tab === 'idea-vs-code' && (
-        <IdeaVsCodePanel projectId={projectId} onOpenCitation={setCitation} />
-      )}
-      {tab === 'flows' && (
-        <FlowsPanel projectId={projectId} lens={lens} onOpenCitation={setCitation} />
-      )}
-      {tab === 'does-it' && (
-        <DoesItPanel projectId={projectId} lens={lens} onOpenCitation={setCitation} />
-      )}
+        <div
+          role="tabpanel"
+          aria-label={TABS.find((item) => item.value === tab)?.label}
+          className="pt-2"
+        >
+          {tab === 'overview' && (
+            <OverviewPanel projectId={projectId} lens={lens} onOpenCitation={setCitation} />
+          )}
+          {tab === 'chat' && (
+            <ChatPanel projectId={projectId} lens={lens} onOpenCitation={setCitation} />
+          )}
+          {tab === 'compare' && <ComparePanel projectId={projectId} onOpenCitation={setCitation} />}
+          {tab === 'idea-vs-code' && (
+            <IdeaVsCodePanel projectId={projectId} onOpenCitation={setCitation} />
+          )}
+          {tab === 'flows' && (
+            <FlowsPanel projectId={projectId} lens={lens} onOpenCitation={setCitation} />
+          )}
+          {tab === 'does-it' && (
+            <DoesItPanel projectId={projectId} lens={lens} onOpenCitation={setCitation} />
+          )}
+        </div>
+      </PageBody>
 
       <CitationViewer projectId={projectId} citation={citation} onClose={closeCitation} />
     </>

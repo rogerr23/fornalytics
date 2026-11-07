@@ -12,6 +12,8 @@ import { Alert } from '../../../shared/ui/Alert'
 import { AnswerMarkdown } from '../../../shared/ui/AnswerMarkdown'
 import { Badge } from '../../../shared/ui/Badge'
 import { Button } from '../../../shared/ui/Button'
+import { FIELD } from '../../../shared/ui/field'
+import { Icon } from '../../../shared/ui/Icon'
 import { Spinner } from '../../../shared/ui/Spinner'
 import { useConversation, useConversationId, useSendMessage } from '../hooks/useChat'
 
@@ -75,10 +77,10 @@ export function ChatPanel({ projectId, lens, onOpenCitation }: ChatPanelProps) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-500">
-          Respostas na lente <span className="font-medium text-gray-800">{LENS_LABEL[lens]}</span>,
-          só com base no material do projeto.
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-grey-500">
+          Respostas na lente <span className="font-semibold text-ink">{LENS_LABEL[lens]}</span>, só
+          com base no material do projeto.
         </p>
         <Button
           variant="ghost"
@@ -89,24 +91,28 @@ export function ChatPanel({ projectId, lens, onOpenCitation }: ChatPanelProps) {
             setConversationId(null)
           }}
         >
+          <Icon name="plus" size={16} />
           Nova conversa
         </Button>
       </div>
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-5">
         {conversation.isLoading && <Spinner label="Carregando a conversa…" />}
         {empty && !conversation.isLoading && (
-          <div className="flex flex-wrap gap-2">
-            {SUGGESTIONS[lens].map((suggestion) => (
-              <button
-                key={suggestion}
-                type="button"
-                onClick={() => ask(suggestion)}
-                className="rounded-full border border-gray-200 px-3 py-1.5 text-sm text-gray-700 hover:border-indigo-300 hover:text-indigo-700"
-              >
-                {suggestion}
-              </button>
-            ))}
+          <div className="flex flex-col gap-3 rounded-lg border border-dashed border-grey-300 p-6">
+            <p className="eyebrow text-grey-500">Comece por uma destas</p>
+            <div className="flex flex-wrap gap-2">
+              {SUGGESTIONS[lens].map((suggestion) => (
+                <button
+                  key={suggestion}
+                  type="button"
+                  onClick={() => ask(suggestion)}
+                  className="min-h-9 rounded-full border border-grey-300 px-3.5 py-1.5 text-[13px] font-medium transition-colors duration-150 hover:border-ink hover:bg-grey-50"
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
           </div>
         )}
         {messages.map((message) =>
@@ -143,7 +149,10 @@ export function ChatPanel({ projectId, lens, onOpenCitation }: ChatPanelProps) {
         <div ref={bottom} />
       </div>
 
-      <form onSubmit={submit} className="sticky bottom-0 flex gap-2 bg-gray-50 py-3">
+      <form
+        onSubmit={submit}
+        className="sticky bottom-0 flex gap-2 border-t border-grey-200 bg-white/95 py-4 backdrop-blur"
+      >
         <textarea
           value={question}
           onChange={(event) => setQuestion(event.target.value)}
@@ -151,7 +160,8 @@ export function ChatPanel({ projectId, lens, onOpenCitation }: ChatPanelProps) {
           rows={2}
           maxLength={2000}
           placeholder="Pergunte algo sobre o produto… (Enter envia, Shift+Enter quebra a linha)"
-          className="flex-1 resize-none rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+          aria-label="Sua pergunta"
+          className={`${FIELD} min-w-0 flex-1 resize-none`}
         />
         <Button type="submit" disabled={!question.trim() || chat.sending}>
           {chat.sending ? 'Respondendo…' : 'Enviar'}
@@ -163,7 +173,7 @@ export function ChatPanel({ projectId, lens, onOpenCitation }: ChatPanelProps) {
 
 function Question({ text }: { text: string }) {
   return (
-    <div className="ml-auto max-w-[80%] whitespace-pre-wrap rounded-2xl rounded-br-sm bg-indigo-600 px-4 py-2 text-sm text-white">
+    <div className="ml-auto max-w-[85%] rounded-lg bg-ink px-4 py-3 text-sm whitespace-pre-wrap text-white sm:max-w-[70%]">
       {text}
     </div>
   )
@@ -171,9 +181,9 @@ function Question({ text }: { text: string }) {
 
 function Answer({ lens, children }: { lens: Lens; children: ReactNode }) {
   return (
-    <div className="flex max-w-[90%] flex-col gap-2 rounded-2xl rounded-bl-sm border border-gray-200 bg-white px-4 py-3">
+    <div className="flex max-w-full flex-col gap-3 rounded-lg border border-grey-200 bg-white px-5 py-4 sm:max-w-[90%]">
       <span className="self-start">
-        <Badge tone="indigo">{LENS_LABEL[lens]}</Badge>
+        <Badge tone="neutral">Lente {LENS_LABEL[lens]}</Badge>
       </span>
       {children}
     </div>

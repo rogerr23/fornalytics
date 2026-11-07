@@ -3,6 +3,7 @@ import { errorMessage } from '../../../shared/api/client'
 import type { TextCitation } from '../../../shared/api/lens'
 import { Alert } from '../../../shared/ui/Alert'
 import { Button } from '../../../shared/ui/Button'
+import { Icon } from '../../../shared/ui/Icon'
 import { Spinner } from '../../../shared/ui/Spinner'
 import { useFile } from '../hooks/useFile'
 
@@ -33,21 +34,24 @@ export function CitationViewer({
   const lines = file.data?.content.split('\n') ?? []
 
   return (
-    <div className="fixed inset-0 z-20 flex justify-end bg-black/20" onClick={onClose}>
+    <div className="fixed inset-0 z-20 flex justify-end bg-black/60" onClick={onClose}>
       <aside
         role="dialog"
         aria-label={`Trecho de ${citation.path}`}
-        className="flex h-full w-full max-w-3xl flex-col bg-white shadow-xl"
+        aria-modal="true"
+        className="flex h-full w-full max-w-3xl flex-col bg-white shadow-panel"
         onClick={(event) => event.stopPropagation()}
       >
-        <header className="flex items-center justify-between gap-4 border-b border-gray-200 px-5 py-3">
+        <header className="flex items-center justify-between gap-4 border-b border-grey-200 px-5 py-4">
           <div className="min-w-0">
-            <p className="truncate font-mono text-sm font-medium text-gray-900">{citation.path}</p>
-            <p className="text-xs text-gray-500">
+            <p className="eyebrow text-grey-500">Trecho citado</p>
+            <p className="truncate font-mono text-sm font-semibold">{citation.path}</p>
+            <p className="text-xs text-grey-500">
               Linhas {citation.line_start}–{citation.line_end}
             </p>
           </div>
-          <Button variant="ghost" size="sm" onClick={onClose}>
+          <Button variant="secondary" size="sm" onClick={onClose} autoFocus>
+            <Icon name="close" size={16} />
             Fechar
           </Button>
         </header>
@@ -72,12 +76,18 @@ export function CitationViewer({
                     <tr
                       key={number}
                       ref={number === citation.line_start ? firstLine : undefined}
-                      className={cited ? 'bg-amber-100' : undefined}
+                      className={cited ? 'bg-grey-200' : undefined}
                     >
-                      <td className="w-12 select-none pr-3 text-right align-top text-gray-400">
+                      <td
+                        className={`w-14 border-r pr-3 text-right align-top select-none ${
+                          cited
+                            ? 'border-ink font-semibold text-ink'
+                            : 'border-grey-200 text-grey-500'
+                        }`}
+                      >
                         {number}
                       </td>
-                      <td className="whitespace-pre-wrap break-all pr-4 text-gray-800">
+                      <td className="pr-4 pl-3 break-all whitespace-pre-wrap text-ink-800">
                         {line || ' '}
                       </td>
                     </tr>

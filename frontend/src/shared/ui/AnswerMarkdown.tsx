@@ -24,7 +24,12 @@ export function AnswerMarkdown({ text, citations, onOpenCitation }: AnswerMarkdo
     a: ({ href, children }) => {
       if (!href?.startsWith(CITATION_SCHEME)) {
         return (
-          <a href={href} target="_blank" rel="noreferrer" className="text-indigo-700 underline">
+          <a
+            href={href}
+            target="_blank"
+            rel="noreferrer"
+            className="underline underline-offset-3 hover:text-grey-500"
+          >
             {children}
           </a>
         )
@@ -58,7 +63,7 @@ export function AnswerMarkdown({ text, citations, onOpenCitation }: AnswerMarkdo
   }
 
   return (
-    <div className="flex flex-col gap-3 text-[15px] leading-relaxed text-gray-800">
+    <div className="flex max-w-[72ch] flex-col gap-3 text-[15px] leading-relaxed text-ink-800">
       <Markdown remarkPlugins={[remarkGfm]} components={components} urlTransform={allowCitations}>
         {markdown}
       </Markdown>
@@ -78,9 +83,10 @@ interface CitationChipProps {
 }
 
 const CHIP: Record<CitationChipProps['state'], string> = {
-  pending: 'bg-gray-100 text-gray-500',
-  valid: 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 cursor-pointer',
-  invalid: 'bg-amber-50 text-amber-800 line-through decoration-amber-400',
+  pending: 'bg-grey-100 text-grey-500',
+  valid:
+    'border border-grey-300 bg-white text-ink hover:border-ink hover:bg-grey-100 cursor-pointer',
+  invalid: 'bg-warning-tint text-warning line-through decoration-warning/50',
 }
 
 function CitationChip({ state, title, onClick, children }: CitationChipProps) {
@@ -100,38 +106,40 @@ function CitationChip({ state, title, onClick, children }: CitationChipProps) {
 }
 
 const MARKDOWN_COMPONENTS: Components = {
-  h1: ({ children }) => <h2 className="mt-2 text-xl font-semibold text-gray-900">{children}</h2>,
-  h2: ({ children }) => <h3 className="mt-2 text-lg font-semibold text-gray-900">{children}</h3>,
-  h3: ({ children }) => <h4 className="mt-1 font-semibold text-gray-900">{children}</h4>,
+  h1: ({ children }) => (
+    <h2 className="mt-3 text-xl font-bold tracking-tight text-ink">{children}</h2>
+  ),
+  h2: ({ children }) => <h3 className="mt-3 text-lg font-bold text-ink">{children}</h3>,
+  h3: ({ children }) => <h4 className="mt-2 font-bold text-ink">{children}</h4>,
   p: ({ children }) => <p>{children}</p>,
   ul: ({ children }) => <ul className="flex list-disc flex-col gap-1 pl-6">{children}</ul>,
   ol: ({ children }) => <ol className="flex list-decimal flex-col gap-1 pl-6">{children}</ol>,
-  strong: ({ children }) => <strong className="font-semibold text-gray-900">{children}</strong>,
+  strong: ({ children }) => <strong className="font-bold text-ink">{children}</strong>,
   code: ({ children, className }) =>
     className ? (
       <code className={`${className} font-mono text-sm`}>{children}</code>
     ) : (
-      <code className="rounded bg-gray-100 px-1 py-0.5 font-mono text-[13px] text-gray-800">
+      <code className="rounded-sm bg-grey-100 px-1 py-0.5 font-mono text-[13px] text-ink">
         {children}
       </code>
     ),
   pre: ({ children }) => (
-    <pre className="overflow-x-auto rounded-lg bg-gray-900 p-3 text-gray-100">{children}</pre>
+    <pre className="overflow-x-auto rounded-lg bg-ink p-4 text-grey-100">{children}</pre>
   ),
   table: ({ children }) => (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto rounded-lg border border-grey-200">
       <table className="min-w-full border-collapse text-sm">{children}</table>
     </div>
   ),
   th: ({ children }) => (
-    <th className="border border-gray-200 bg-gray-50 px-3 py-1.5 text-left font-semibold">
+    <th className="border-b border-grey-200 bg-grey-50 px-3 py-2 text-left font-bold">
       {children}
     </th>
   ),
   td: ({ children }) => (
-    <td className="border border-gray-200 px-3 py-1.5 align-top">{children}</td>
+    <td className="border-b border-grey-200 px-3 py-2 align-top">{children}</td>
   ),
   blockquote: ({ children }) => (
-    <blockquote className="border-l-4 border-gray-200 pl-4 text-gray-600">{children}</blockquote>
+    <blockquote className="border-l-2 border-ink pl-4 text-ink-600">{children}</blockquote>
   ),
 }
