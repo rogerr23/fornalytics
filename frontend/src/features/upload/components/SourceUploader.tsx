@@ -7,10 +7,11 @@ import { Tabs } from '../../../shared/ui/Tabs'
 import { useAddSource } from '../hooks/useSources'
 import type { IngestionSummary, NewSource } from '../types'
 
-type Mode = 'code' | 'document' | 'text'
+type Mode = 'code' | 'github' | 'document' | 'text'
 
 const MODES = [
   { value: 'code' as const, label: 'Código (.zip)' },
+  { value: 'github' as const, label: 'Link do GitHub' },
   { value: 'document' as const, label: 'Documento' },
   { value: 'text' as const, label: 'Colar texto' },
 ]
@@ -31,6 +32,7 @@ export function SourceUploader({ projectId, disabled, onUploaded }: SourceUpload
   const [textType, setTextType] = useState<SourceType>('text')
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
+  const [url, setUrl] = useState('')
   const [inputKey, setInputKey] = useState(0)
   const add = useAddSource(projectId)
 
@@ -38,6 +40,7 @@ export function SourceUploader({ projectId, disabled, onUploaded }: SourceUpload
     setFile(null)
     setTitle('')
     setContent('')
+    setUrl('')
     setInputKey((key) => key + 1) // clears the file input
   }
 
@@ -51,7 +54,8 @@ export function SourceUploader({ projectId, disabled, onUploaded }: SourceUpload
     event.preventDefault()
     let source: NewSource | null = null
     if (mode === 'text' && content.trim()) source = { kind: 'text', type: textType, title, content }
-    if (mode !== 'text' && file) {
+    if (mode === 'github' && url.trim()) source = { kind: 'github', url }
+    if ((mode === 'code' || mode === 'document') && file) {
       source = { kind: 'file', type: mode === 'code' ? 'code' : documentType, file }
     }
     if (!source) return
@@ -63,7 +67,13 @@ export function SourceUploader({ projectId, disabled, onUploaded }: SourceUpload
     })
   }
 
-  const ready = mode === 'text' ? content.trim().length > 0 : file !== null
+  const ready =
+    mode === 'text'
+      ? content.trim().length > 0
+      : mode === 'github'
+        ? url.trim().length > 0
+        : file !== null
+  const pendingLabel = mode === 'github' ? 'Baixando o repositório…' : 'Lendo o material…'
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-4">
@@ -74,6 +84,26 @@ export function SourceUploader({ projectId, disabled, onUploaded }: SourceUpload
           Um .zip do repositório. Pastas como node_modules e .git, binários, lockfiles e arquivos
           .env são ignorados automaticamente.
         </p>
+      )}
+      {mode === 'github' && (
+        <div className="flex flex-col gap-1.5">
+          <input
+            type="text"
+            inputMode="url"
+            autoComplete="off"
+            spellCheck={false}
+            value={url}
+            onChange={(event) => setUrl(event.target.value)}
+            placeholder="https://github.com/dono/repositorio"
+            aria-label="Link do repositório no GitHub"
+            className={FIELD}
+          />
+          <p className="text-sm text-gray-600">
+            Só repositórios públicos. Serve o link do repositório ou de um branch, terminado em{' '}
+            <code>/tree/nome-do-branch</code>. O repositório é baixado como .zip e passa pelos
+            mesmos filtros do envio.
+          </p>
+        </div>
       )}
       {mode === 'document' && (
         <label className="flex flex-col gap-1.5 text-sm font-medium text-gray-700">
@@ -88,7 +118,7 @@ export function SourceUploader({ projectId, disabled, onUploaded }: SourceUpload
           </select>
         </label>
       )}
-      {mode !== 'text' && (
+      {(mode === 'code' || mode === 'document') && (
         <input
           key={inputKey}
           type="file"
@@ -128,7 +158,7 @@ export function SourceUploader({ projectId, disabled, onUploaded }: SourceUpload
       {add.isError && <Alert tone="error">{errorMessage(add.error)}</Alert>}
       <div>
         <Button type="submit" disabled={disabled || !ready || add.isPending}>
-          {add.isPending ? 'Lendo o material…' : 'Enviar'}
+          {add.isPending ? pendingLabel : 'Enviar'}
         </Button>
       </div>
     </form>

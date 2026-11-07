@@ -25,6 +25,7 @@ export interface IngestionSummary {
 export type NewSource =
   | { kind: 'file'; type: SourceType; file: File }
   | { kind: 'text'; type: SourceType; title: string; content: string }
+  | { kind: 'github'; url: string }
 
 export const SKIP_LABEL: Record<SkipReason, string> = {
   ignored_dir: 'em pasta ignorada (node_modules, .git, build…)',
