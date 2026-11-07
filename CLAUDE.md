@@ -486,6 +486,10 @@ Marque `[x]` ao concluir cada item e atualize esta lista no mesmo commit.
 | 2026-11-06 | Fluxo perguntado na lente ativa (tom dos passos); rótulos do diagrama curtos em qualquer lente | Mesmo padrão do "Isso faz?" |
 | 2026-11-06 | Fluxos perguntados não são gravados; limite de 10 passos e 12 nós | Igual ao lado a lado; o diagrama cabe na tela e a resposta não vem cortada |
 | 2026-11-06 | `mermaid` carregado sob demanda no frontend, em modo `strict` | Não pesar o carregamento inicial; segurança do SVG |
+| 2026-11-06 | Demo em TypeScript + Express, só como código (não instalada nem rodada) | Mostra que o Fornalytics lê outra stack, sem trazer dependência nova ao projeto |
+| 2026-11-06 | Funcionalidade não documentada da demo: lista de desejos; sem funcionalidade parcial | Fácil de explicar e resultado previsível ao vivo (seção 10) |
+| 2026-11-06 | Escopo da demo só em `.md` (sem transcrição) | Evita promessas extras que bagunçariam a tabela esperada |
+| 2026-11-06 | Fase 10 só fica `[x]` depois da rodada real com o Gemini | O critério de pronto é o resultado de ponta a ponta, não só o material |
 | 2026-11-06 | Extração com ~56 mil tokens de código passou sem 429 no `gemini-3.5-flash` | Primeiro teste real; o limite de 200 mil por etapa segue sem teste num repositório desse tamanho |
 
 ---

@@ -4,6 +4,13 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 
 ## [Não lançado]
 
+### Fase 10 — demo (rodada real pendente)
+- `demo/loja/`: **Loja Aurora**, API de loja em TypeScript + Express (catálogo, login, carrinho, checkout com pagamento simulado, e-mail, pedidos e lista de desejos). Material de entrada: não é instalada nem rodada.
+- `demo/escopo.md`: escopo com duas promessas não implementadas (cupom de desconto, nota fiscal); a lista de desejos existe no código e não está no escopo.
+- `npm run demo:zip` (Python `zipfile` pelo `uv`, funciona em qualquer sistema); `demo/loja.zip` fora do Git.
+- `docs/demo-script.md`: preparação, roteiro de 10 minutos, respostas esperadas e plano B.
+- Ingestão conferida: 26 arquivos, cerca de 5,5 mil tokens, nada ignorado.
+
 ### Fase 9 — fluxos com Mermaid
 - `GET /flows`: os fluxos da base desenhados como sequências, sem chamar a IA.
 - `POST /flow`: "o que acontece quando…?" em uma chamada. O modelo devolve passos, nós e arestas; o backend confere as evidências, aplica os limites (10 passos, 12 nós) e monta o Mermaid.

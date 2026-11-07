@@ -78,6 +78,7 @@ Todos rodam a partir da raiz do projeto.
 | `npm run migration:new -- -m "descricao"` | Gera uma migração nova a partir dos models |
 | `npm run llm:check` | Confere a IA configurada (1 chamada real) |
 | `npm run llm:models` | Lista os modelos Flash do Gemini disponíveis para a sua chave |
+| `npm run demo:zip` | Gera `demo/loja.zip`, o código da loja de exemplo para enviar na demo |
 
 ---
 
@@ -139,6 +140,10 @@ Com `npm run dev` rodando, abra http://localhost:5173:
    - **Fluxos:** os fluxos da base já aparecem desenhados; pergunte "o que acontece quando…?" para ver o passo a passo com diagrama.
    - Citações válidas abrem o trecho do arquivo; as que não conferem aparecem como "não verificada".
 5. Se o material mudar depois do processamento, aparece o aviso **O material mudou** com o botão **Reprocessar**.
+
+### Demo
+
+O material da apresentação fica em `demo/`: a **Loja Aurora** (código) e o `escopo.md` (documento da ideia), com lacunas propositais. Veja [`demo/README.md`](demo/README.md) e o roteiro em [`docs/demo-script.md`](docs/demo-script.md).
 
 ### Testando a API direto (sem frontend)
 

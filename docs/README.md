@@ -14,5 +14,5 @@ A tabela completa (o que vai em cada doc e quando atualizar) está na seção 14
 | [api-events.md](api-events.md) | Ativo |
 | [prompts.md](prompts.md) | Ativo |
 | [runbook.md](runbook.md) | Ativo |
-| demo-script.md | A criar na Fase 10 |
+| [demo-script.md](demo-script.md) | Ativo |
 | evals/ | A criar na Fase 11 |

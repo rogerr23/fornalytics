@@ -143,3 +143,14 @@ Uma entrada por sessão de trabalho: o que foi pedido, o que saiu, o que preciso
   - o `mermaid` carrega só quando a aba abre, em pacotes separados.
 - **Ajuste no caminho:** quando o Mermaid não consegue desenhar, ele deixa um bloco de erro solto no fim da página. O componente agora o remove ao mostrar o texto do diagrama no lugar.
 - **Pendente:** teste real das Fases 7 e 9 quando a cota voltar.
+
+## 2026-11-06 — Fase 10 (demo), parte 1
+
+- **Pedido:** explicar a Fase 10 e executá-la com as recomendações (TypeScript + Express só como código, lista de desejos como não documentada, escopo em `.md`, rodada real quando a cota voltar, sem parcial).
+- **Resultado:**
+  - Loja Aurora com 636 linhas;
+  - escopo com 8 funcionalidades (6 batendo com o código, cupom e nota fiscal ausentes) e as 4 regras de negócio;
+  - `npm run demo:zip`;
+  - roteiro em `docs/demo-script.md`.
+- **Conferido:** o código da loja não cita cupom, desconto nem nota fiscal; o `README.md` da loja (o primeiro arquivo lido pela ingestão) também não. A ingestão pela API leu 26 arquivos, cerca de 5,5 mil tokens, sem nada ignorado. O projeto "Loja Aurora (demo)" ficou no banco, em rascunho, pronto para processar.
+- **Pendente:** a rodada real com o Gemini (também cobre o teste das Fases 7 e 9). A fase só é marcada como concluída depois dela.
