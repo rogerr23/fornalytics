@@ -154,3 +154,22 @@ Uma entrada por sessão de trabalho: o que foi pedido, o que saiu, o que preciso
   - roteiro em `docs/demo-script.md`.
 - **Conferido:** o código da loja não cita cupom, desconto nem nota fiscal; o `README.md` da loja (o primeiro arquivo lido pela ingestão) também não. A ingestão pela API leu 26 arquivos, cerca de 5,5 mil tokens, sem nada ignorado. O projeto "Loja Aurora (demo)" ficou no banco, em rascunho, pronto para processar.
 - **Pendente:** a rodada real com o Gemini (também cobre o teste das Fases 7 e 9). A fase só é marcada como concluída depois dela.
+
+## 2026-11-06 — Fase 11 (qualidade), parte sem cota
+
+- **Pedido:** explicar a Fase 11 e começar pela parte que não gasta cota, dentro da branch `feat/demo` (o Roger trocou de branch e preferiu concentrar tudo nela).
+- **Resultado:**
+  - 50 perguntas no `questions.yaml`;
+  - checagens puras, relatório e script com retomada;
+  - 14 testes novos (138 no backend, 15 no frontend);
+  - acabamento visual conferido no desktop e no celular.
+- **Teste do script sem cota:** rodei o fluxo inteiro com um provedor simulado, gravando numa pasta temporária:
+  - perguntas respondidas, progresso salvo, relatório, respostas e reservas gerados;
+  - Ideia × Código conferido;
+  - o teste pegou uma pasta criada sem `parents=True`, corrigida.
+- **Ajuste visual no caminho:** com "sem comparação", as colunas diziam "Tudo o que foi prometido aparece no código". Agora dizem "Sem promessas para comparar".
+- **Pendente (com cota):**
+  1. rodada real da Fase 10;
+  2. primeira rodada do eval;
+  3. ajuste dos prompts e nova rodada das reprovadas;
+  4. revisão de tom pelo Roger.

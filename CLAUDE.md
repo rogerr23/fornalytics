@@ -490,6 +490,9 @@ Marque `[x]` ao concluir cada item e atualize esta lista no mesmo commit.
 | 2026-11-06 | Funcionalidade não documentada da demo: lista de desejos; sem funcionalidade parcial | Fácil de explicar e resultado previsível ao vivo (seção 10) |
 | 2026-11-06 | Escopo da demo só em `.md` (sem transcrição) | Evita promessas extras que bagunçariam a tabela esperada |
 | 2026-11-06 | Fase 10 só fica `[x]` depois da rodada real com o Gemini | O critério de pronto é o resultado de ponta a ponta, não só o material |
+| 2026-11-06 | Fases 10 e 11 na branch `feat/demo` (pedido do Roger) | A demo e a avaliação andam juntas e entram no `main` num só Pull Request |
+| 2026-11-06 | Eval só na Loja Aurora, chamando os serviços direto, com espera, retomada e subconjuntos | Respostas certas conhecidas; não precisa subir o servidor; cabe no limite do plano gratuito |
+| 2026-11-06 | Respostas de reserva da demo geradas pelo eval (`demo: true`) em `demo/reserva/` | O plano B usa respostas reais, no mesmo formato da tela |
 | 2026-11-06 | Extração com ~56 mil tokens de código passou sem 429 no `gemini-3.5-flash` | Primeiro teste real; o limite de 200 mil por etapa segue sem teste num repositório desse tamanho |
 
 ---

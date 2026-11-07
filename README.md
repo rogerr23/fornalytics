@@ -79,6 +79,7 @@ Todos rodam a partir da raiz do projeto.
 | `npm run llm:check` | Confere a IA configurada (1 chamada real) |
 | `npm run llm:models` | Lista os modelos Flash do Gemini disponíveis para a sua chave |
 | `npm run demo:zip` | Gera `demo/loja.zip`, o código da loja de exemplo para enviar na demo |
+| `npm run eval` | Roda o conjunto de avaliação com a IA real (gasta cota; veja abaixo) |
 
 ---
 
@@ -144,6 +145,19 @@ Com `npm run dev` rodando, abra http://localhost:5173:
 ### Demo
 
 O material da apresentação fica em `demo/`: a **Loja Aurora** (código) e o `escopo.md` (documento da ideia), com lacunas propositais. Veja [`demo/README.md`](demo/README.md) e o roteiro em [`docs/demo-script.md`](docs/demo-script.md).
+
+### Avaliação (eval)
+
+O conjunto de avaliação (`backend/evals/questions.yaml`) tem 50 perguntas sobre a Loja Aurora, cerca de 15 por lente mais o lado a lado, cada uma com o que se espera da resposta. Ele precisa do projeto **Loja Aurora (demo)** já processado.
+
+```bash
+npm run eval
+```
+
+- Cada pergunta é uma chamada à IA. O script espera alguns segundos entre as chamadas e salva o progresso: se a cota acabar, rode de novo depois e ele continua de onde parou.
+- `npm run eval -- --core`: só o subconjunto rápido, para conferir depois de mudar um prompt.
+- `npm run eval -- --only nt-09,tec-02 --redo`: refaz perguntas específicas.
+- O relatório vai para `docs/evals/AAAA-MM-DD.md` e as respostas completas para `docs/evals/AAAA-MM-DD-respostas.md`. As perguntas do roteiro da demo viram respostas de reserva em `demo/reserva/`.
 
 ### Testando a API direto (sem frontend)
 

@@ -15,4 +15,4 @@ A tabela completa (o que vai em cada doc e quando atualizar) está na seção 14
 | [prompts.md](prompts.md) | Ativo |
 | [runbook.md](runbook.md) | Ativo |
 | [demo-script.md](demo-script.md) | Ativo |
-| evals/ | A criar na Fase 11 |
+| evals/ | Relatórios do `npm run eval` (criados na primeira rodada) |

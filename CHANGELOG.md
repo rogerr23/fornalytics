@@ -4,6 +4,25 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 
 ## [Não lançado]
 
+### Fase 11 — qualidade (parte sem cota)
+- `backend/evals/questions.yaml`: 50 perguntas sobre a Loja Aurora (15 por lente e 5 do lado a lado), com o que se espera de cada uma, mais as colunas esperadas do Ideia × Código.
+- `npm run eval`: roda o conjunto com a IA real, chamando os serviços direto. Espera entre as chamadas, retoma depois de um erro de cota e aceita rodar só uma parte (`--core`, `--only`, `--lens`).
+- Checagens objetivas, sem IA como juiz:
+  - citações pela regra de cada lente;
+  - "não encontrei no material" só quando esperado;
+  - veredito e funcionalidade do "Isso faz?";
+  - fatos esperados e proibidos;
+  - tamanho da resposta;
+  - colunas do Ideia × Código.
+- O script gera o relatório em `docs/evals/`, com a lista para revisar o tom, e as respostas de reserva da demo em `demo/reserva/`.
+- Acabamento visual:
+  - título da aba do navegador por página;
+  - foco visível no teclado;
+  - ícone próprio;
+  - resumo do material no cabeçalho do projeto;
+  - texto neutro nas colunas do Ideia × Código quando não há comparação.
+- `pyyaml` declarado como dependência de desenvolvimento.
+
 ### Fase 10 — demo (rodada real pendente)
 - `demo/loja/`: **Loja Aurora**, API de loja em TypeScript + Express (catálogo, login, carrinho, checkout com pagamento simulado, e-mail, pedidos e lista de desejos). Material de entrada: não é instalada nem rodada.
 - `demo/escopo.md`: escopo com duas promessas não implementadas (cupom de desconto, nota fiscal); a lista de desejos existe no código e não está no escopo.

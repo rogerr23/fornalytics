@@ -50,8 +50,8 @@ Passos extras, se sobrar tempo:
 
 | Situação | O que fazer |
 |---|---|
-| 429 ou 503 numa pergunta | Mostrar o aviso amigável (faz parte da história: "a tela nunca quebra") e usar a resposta já feita no ensaio, que continua na aba enquanto ela estiver aberta |
-| Cota do dia acabou | Visão geral (cache), Ideia × Código e Fluxos da base funcionam sem IA. Para as outras abas, usar as respostas salvas (Fase 11) |
+| 429 ou 503 numa pergunta | Mostrar o aviso amigável (faz parte da história: "a tela nunca quebra") e usar a resposta já feita no ensaio, que continua na aba enquanto ela estiver aberta, ou a reserva em `demo/reserva/` |
+| Cota do dia acabou | Visão geral (cache), Ideia × Código e Fluxos da base funcionam sem IA. Para as outras abas, usar as respostas de reserva em `demo/reserva/` (geradas pelo `npm run eval`, uma por pergunta do roteiro) |
 | Backend fora | `npm run dev` de novo; o projeto e a base estão no banco (Neon) |
 | Neon "dormindo" | A primeira requisição pode levar alguns segundos; recarregar a página |
 
