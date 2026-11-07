@@ -59,3 +59,5 @@ Desktop.ini
 
 # --- Demo ---
 demo/loja.zip
+# Respostas brutas das rodadas de avaliação (o relatório fica em docs/evals/)
+backend/evals/runs/

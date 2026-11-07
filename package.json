@@ -18,7 +18,8 @@
     "migration:new": "uv --directory backend run alembic revision --autogenerate",
     "llm:check": "uv --directory backend run python -m app.llm.check",
     "llm:models": "uv --directory backend run python -m app.llm.check --models",
-    "demo:zip": "uv --directory backend run python ../demo/make_zip.py"
+    "demo:zip": "uv --directory backend run python ../demo/make_zip.py",
+    "eval": "uv --directory backend run python -m evals.run"
   },
   "devDependencies": {
     "concurrently": "^10.0.6"
