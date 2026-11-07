@@ -6,6 +6,7 @@ import uuid
 from collections import defaultdict
 from pathlib import PurePosixPath
 
+import httpx
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -20,6 +21,7 @@ from app.ingestion.extractors import extension_of, get_extractor
 from app.ingestion.extractors.text import single_file
 from app.ingestion.filters import MAX_FILE_BYTES
 from app.ingestion.limits import compute_limits
+from app.ingestion.remote.github import download_repo_zip, parse_github_url
 from app.ingestion.tokens import estimate_tokens
 from app.ingestion.types import ExtractionResult, SkipReason, UploadLimits
 
@@ -70,9 +72,10 @@ class IngestionSummary(BaseModel):
 
 
 class IngestionService:
-    def __init__(self, session: AsyncSession, settings: Settings) -> None:
+    def __init__(self, session: AsyncSession, settings: Settings, http: httpx.AsyncClient) -> None:
         self._session = session
         self._settings = settings
+        self._http = http
         self._projects = ProjectRepository(session)
         self._sources = SourceRepository(session)
 
@@ -81,14 +84,25 @@ class IngestionService:
     ) -> IngestionSummary:
         _check_type_for_file(filename, source_type)
         await self._ensure_editable(project_id)
+        result = await self._extract(filename, data)
+        return await self._store(project_id, source_type, PurePosixPath(filename).name, result)
+
+    async def ingest_github(self, project_id: uuid.UUID, url: str) -> IngestionSummary:
+        """Public GitHub repository by link: downloaded as a zip, then ingested like one."""
+        repo = parse_github_url(url)
+        await self._ensure_editable(project_id)
+        data = await download_repo_zip(self._http, repo, self._settings.max_upload_mb)
+        result = await self._extract(f"{repo.name}.zip", data)
+        return await self._store(project_id, SourceType.CODE, repo.label, result)
+
+    async def _extract(self, filename: str, data: bytes) -> ExtractionResult:
         limits = UploadLimits(
             max_unzipped_bytes=self._settings.max_unzipped_mb * 1024 * 1024,
             max_files=self._settings.max_files,
         )
         extractor = get_extractor(filename)
         # Parsing PDFs and zips is CPU work: keep the event loop free.
-        result = await asyncio.to_thread(extractor.extract, filename, data, limits)
-        return await self._store(project_id, source_type, PurePosixPath(filename).name, result)
+        return await asyncio.to_thread(extractor.extract, filename, data, limits)
 
     async def ingest_text(
         self, project_id: uuid.UUID, source_type: SourceType, title: str | None, content: str

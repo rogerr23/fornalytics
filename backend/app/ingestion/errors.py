@@ -9,3 +9,9 @@ class InvalidUpload(AppError):
 
 class UploadTooLarge(AppError):
     status_code = 413
+
+
+class SourceUnavailable(AppError):
+    """An external source (GitHub) could not be reached or refused the download."""
+
+    status_code = 502

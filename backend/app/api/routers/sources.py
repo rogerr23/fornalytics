@@ -27,15 +27,23 @@ async def add_source(
     file: UploadFile | None = None,
     title: Annotated[str | None, Form()] = None,
     content: Annotated[str | None, Form()] = None,
+    url: Annotated[str | None, Form(max_length=500)] = None,
 ) -> IngestionSummaryOut:
-    """Send a file (zip, pdf, docx, md, txt) or pasted text. Text is extracted right away."""
+    """Send a file (zip, pdf, docx, md, txt), a public GitHub repository link or pasted text.
+
+    Text is extracted right away.
+    """
     if file is not None and file.filename:
         data = await _read_limited(file, settings.max_upload_mb)
         summary = await service.ingest_upload(project_id, type, file.filename, data)
+    elif url and url.strip():
+        if type != SourceType.CODE:
+            raise InvalidUpload("Link do GitHub é sempre código: use o tipo 'code'.")
+        summary = await service.ingest_github(project_id, url)
     elif content and content.strip():
         summary = await service.ingest_text(project_id, type, title, content)
     else:
-        raise InvalidUpload("Envie um arquivo ou cole um texto.")
+        raise InvalidUpload("Envie um arquivo, um link do GitHub ou cole um texto.")
     return IngestionSummaryOut.model_validate(summary.model_dump())
 
 

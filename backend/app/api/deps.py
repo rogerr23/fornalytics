@@ -4,6 +4,7 @@ from collections.abc import AsyncIterator
 from functools import lru_cache
 from typing import Annotated
 
+import httpx
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 
@@ -58,6 +59,12 @@ def get_processing_runner() -> ProcessingRunner:
     return ProcessingRunner(get_session_factory(), provider, extractor)
 
 
+@lru_cache
+def get_http_client() -> httpx.AsyncClient:
+    """One HTTP client per process for external sources (GitHub); closed on shutdown."""
+    return httpx.AsyncClient(headers={"User-Agent": "Fornalytics"})
+
+
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
 SettingsDep = Annotated[Settings, Depends(get_settings)]
 
@@ -66,8 +73,13 @@ def get_project_service(session: SessionDep, settings: SettingsDep) -> ProjectSe
     return ProjectService(session, settings)
 
 
-def get_ingestion_service(session: SessionDep, settings: SettingsDep) -> IngestionService:
-    return IngestionService(session, settings)
+HttpDep = Annotated[httpx.AsyncClient, Depends(get_http_client)]
+
+
+def get_ingestion_service(
+    session: SessionDep, settings: SettingsDep, http: HttpDep
+) -> IngestionService:
+    return IngestionService(session, settings, http)
 
 
 def get_product_base_service(session: SessionDep) -> ProductBaseService:

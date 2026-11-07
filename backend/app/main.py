@@ -8,7 +8,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app import __version__
-from app.api.deps import get_llm_provider, get_processing_runner
+from app.api.deps import get_http_client, get_llm_provider, get_processing_runner
 from app.api.routers import health, lenses, processing, projects, sources
 from app.core.config import Settings, get_settings
 from app.core.errors import AppError, app_error_handler
@@ -32,6 +32,8 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
         await get_engine().dispose()
     if get_llm_provider.cache_info().currsize:
         await get_llm_provider().aclose()
+    if get_http_client.cache_info().currsize:
+        await get_http_client().aclose()
 
 
 async def _recover_interrupted_processing() -> None:
