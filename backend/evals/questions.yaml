@@ -1,0 +1,306 @@
+# Conjunto de avaliação do Fornalytics, sobre a Loja Aurora (demo/).
+# Uso: npm run eval (veja README.md). Checagens: evals/checks.py.
+#
+# Campos de cada pergunta:
+#   id      único; prefixo pela lente (cli, nt, tec) ou cmp (lado a lado)
+#   kind    chat | does_it | compare | flow
+#   lens    cliente | nao_tecnico | tecnico (compare responde nas três)
+#   expect  o que conferir (todos opcionais):
+#     mentions_any      ao menos um destes trechos aparece (sem diferenciar maiúsculas e acentos)
+#     must_not_mention  nenhum destes trechos aparece
+#     not_found         true: a resposta diz "não encontrei no material"
+#     citations         required | forbidden | any (padrão pela lente: cliente forbidden,
+#                       nao_tecnico any, tecnico required; any quando not_found)
+#     verdict           sim | nao | parcialmente (does_it)
+#     feature_any       a funcionalidade da base apontada contém um destes trechos (does_it)
+#     no_feature        true: nenhuma funcionalidade da base corresponde (does_it)
+#   demo    true: pergunta do roteiro; a resposta vira reserva em demo/reserva/
+#   core    true: subconjunto rápido para repetir depois de mudar um prompt
+
+project: Loja Aurora (demo)
+
+# Colunas esperadas do Ideia × Código (sem IA). Cada item é um grupo de trechos;
+# basta um deles aparecer no nome ou na descrição de uma funcionalidade da coluna.
+idea_vs_code:
+  delivered:
+    - [catálogo, produtos, busca]
+    - [login, cadastro, autentica]
+    - [carrinho]
+    - [checkout, pagamento]
+    - [e-mail, email, confirmação]
+    - [histórico, pedidos]
+  missing:
+    - [cupom]
+    - [nota fiscal]
+  undocumented:
+    - [desejo, wishlist, salvar]
+
+questions:
+  # ---------------- Cliente ----------------
+  - id: cli-01
+    kind: chat
+    lens: cliente
+    question: O que é a Loja Aurora?
+    expect: { mentions_any: [casa, loja] }
+    core: true
+  - id: cli-02
+    kind: chat
+    lens: cliente
+    question: Como eu compro um produto?
+    expect: { mentions_any: [carrinho] }
+  - id: cli-03
+    kind: chat
+    lens: cliente
+    question: Quanto custa o frete?
+    expect: { mentions_any: ["199"] }
+  - id: cli-04
+    kind: chat
+    lens: cliente
+    question: Posso comprar 15 unidades do mesmo produto?
+    expect: { mentions_any: ["10", dez] }
+  - id: cli-05
+    kind: chat
+    lens: cliente
+    question: Como eu pago a compra?
+    expect: { mentions_any: [cartão], must_not_mention: [boleto] }
+  - id: cli-06
+    kind: chat
+    lens: cliente
+    question: Recebo alguma confirmação depois de comprar?
+    expect: { mentions_any: [e-mail, email] }
+  - id: cli-07
+    kind: chat
+    lens: cliente
+    question: Consigo ver os pedidos que já fiz?
+    expect: { mentions_any: [histórico, pedidos] }
+  - id: cli-08
+    kind: chat
+    lens: cliente
+    question: A loja tem programa de pontos ou fidelidade?
+    expect: { not_found: true }
+    core: true
+  - id: cli-09
+    kind: does_it
+    lens: cliente
+    question: A loja emite nota fiscal?
+    expect: { verdict: nao, feature_any: [nota fiscal] }
+  - id: cli-10
+    kind: does_it
+    lens: cliente
+    question: Posso usar um cupom de desconto?
+    expect: { verdict: nao, feature_any: [cupom] }
+  - id: cli-11
+    kind: does_it
+    lens: cliente
+    question: Dá para salvar produtos para comprar depois?
+    expect: { verdict: sim, feature_any: [desejo, wishlist, salvar] }
+    demo: true
+    core: true
+  - id: cli-12
+    kind: does_it
+    lens: cliente
+    question: A loja tem aplicativo para celular?
+    expect: { verdict: nao, no_feature: true }
+  - id: cli-13
+    kind: chat
+    lens: cliente
+    question: Qual é o prazo de entrega?
+    expect: { not_found: true }
+  - id: cli-14
+    kind: chat
+    lens: cliente
+    question: Como faço para trocar ou devolver um produto?
+    expect: { not_found: true }
+  - id: cli-15
+    kind: flow
+    lens: cliente
+    question: O que acontece quando eu finalizo a compra?
+    expect: { mentions_any: [cartão, pagamento] }
+
+  # ---------------- Não técnico ----------------
+  - id: nt-01
+    kind: chat
+    lens: nao_tecnico
+    question: Como funciona o cadastro de um cliente?
+    expect: { mentions_any: [e-mail, email, senha] }
+  - id: nt-02
+    kind: chat
+    lens: nao_tecnico
+    question: Qual é o tamanho mínimo da senha?
+    expect: { mentions_any: ["8", oito] }
+    core: true
+  - id: nt-03
+    kind: chat
+    lens: nao_tecnico
+    question: Como o cliente encontra um produto no catálogo?
+    expect: { mentions_any: [busca, categoria] }
+  - id: nt-04
+    kind: chat
+    lens: nao_tecnico
+    question: Quais categorias de produto existem?
+    expect: { mentions_any: [cozinha, decoração, banho, quarto] }
+  - id: nt-05
+    kind: chat
+    lens: nao_tecnico
+    question: O que acontece se o cartão do cliente for recusado?
+    expect: { mentions_any: [recusad, não é aprovad, não aprovad] }
+  - id: nt-06
+    kind: chat
+    lens: nao_tecnico
+    question: E se um produto acabar no estoque enquanto está no carrinho?
+    expect: { mentions_any: [estoque] }
+  - id: nt-07
+    kind: chat
+    lens: nao_tecnico
+    question: Quando o frete é grátis?
+    expect: { mentions_any: ["199"] }
+  - id: nt-08
+    kind: chat
+    lens: nao_tecnico
+    question: Um cliente consegue ver o pedido de outra pessoa?
+    expect: { mentions_any: [próprio, próprios, apenas, somente, só] }
+  - id: nt-09
+    kind: does_it
+    lens: nao_tecnico
+    question: O sistema gera nota fiscal?
+    expect: { verdict: nao, feature_any: [nota fiscal] }
+    demo: true
+    core: true
+  - id: nt-10
+    kind: does_it
+    lens: nao_tecnico
+    question: Tem cupom de desconto?
+    expect: { verdict: nao, feature_any: [cupom] }
+    demo: true
+    core: true
+  - id: nt-11
+    kind: does_it
+    lens: nao_tecnico
+    question: O sistema manda e-mail de confirmação do pedido?
+    expect: { verdict: sim, feature_any: [e-mail, email, confirmação] }
+  - id: nt-12
+    kind: does_it
+    lens: nao_tecnico
+    question: Dá para rastrear a entrega do pedido?
+    expect: { verdict: nao, no_feature: true }
+  - id: nt-13
+    kind: chat
+    lens: nao_tecnico
+    question: Por quanto tempo o cliente fica logado?
+    expect: { mentions_any: ["12", doze] }
+  - id: nt-14
+    kind: chat
+    lens: nao_tecnico
+    question: A loja aceita parcelamento no cartão?
+    expect: { not_found: true }
+  - id: nt-15
+    kind: flow
+    lens: nao_tecnico
+    question: O que acontece quando o cliente coloca um produto no carrinho?
+    expect: { mentions_any: [estoque, "10"] }
+
+  # ---------------- Técnico ----------------
+  - id: tec-01
+    kind: chat
+    lens: tecnico
+    question: Qual é a stack do projeto?
+    expect: { mentions_any: [express] }
+    core: true
+  - id: tec-02
+    kind: chat
+    lens: tecnico
+    question: Como funciona o login?
+    expect: { mentions_any: [scrypt, token] }
+    demo: true
+    core: true
+  - id: tec-03
+    kind: chat
+    lens: tecnico
+    question: Como a senha é armazenada?
+    expect: { mentions_any: [scrypt, salt, sal] }
+  - id: tec-04
+    kind: chat
+    lens: tecnico
+    question: Onde fica a regra de frete grátis?
+    expect: { mentions_any: [shippingFor, config] }
+  - id: tec-05
+    kind: chat
+    lens: tecnico
+    question: Como as rotas protegidas identificam o usuário?
+    expect: { mentions_any: [requireAuth, bearer] }
+  - id: tec-06
+    kind: chat
+    lens: tecnico
+    question: Onde os dados ficam armazenados?
+    expect: { mentions_any: [memória, map] }
+  - id: tec-07
+    kind: chat
+    lens: tecnico
+    question: Como o checkout garante que o estoque não fica negativo?
+    expect: { mentions_any: [stock, estoque] }
+  - id: tec-08
+    kind: chat
+    lens: tecnico
+    question: Como o gateway de pagamento decide recusar um cartão?
+    expect: { mentions_any: ["0000"] }
+  - id: tec-09
+    kind: chat
+    lens: tecnico
+    question: Quais códigos de erro HTTP a API devolve?
+    expect: { mentions_any: ["402", "409"] }
+  - id: tec-10
+    kind: does_it
+    lens: tecnico
+    question: Existe integração com emissor de nota fiscal?
+    expect: { verdict: nao, feature_any: [nota fiscal] }
+  - id: tec-11
+    kind: does_it
+    lens: tecnico
+    question: Existe endpoint de lista de desejos?
+    expect: { verdict: sim, feature_any: [desejo, wishlist] }
+  - id: tec-12
+    kind: does_it
+    lens: tecnico
+    question: A API tem login com Google (OAuth)?
+    expect: { verdict: nao, no_feature: true }
+  - id: tec-13
+    kind: chat
+    lens: tecnico
+    question: Qual versão do PostgreSQL o projeto usa?
+    expect: { mentions_any: [memória, map, não usa, não encontrei] }
+    core: true
+  - id: tec-14
+    kind: chat
+    lens: tecnico
+    question: Como é feito o deploy em Kubernetes?
+    expect: { not_found: true }
+  - id: tec-15
+    kind: flow
+    lens: tecnico
+    question: O que acontece quando o cliente finaliza a compra?
+    expect: { mentions_any: [chargeCard, cartão, pagamento] }
+    demo: true
+
+  # ---------------- Lado a lado (uma chamada, três lentes) ----------------
+  - id: cmp-01
+    kind: compare
+    question: Como funciona o frete?
+    expect: { mentions_any: ["199"] }
+    demo: true
+    core: true
+  - id: cmp-02
+    kind: compare
+    question: Como funciona o login?
+    expect: { mentions_any: [senha] }
+  - id: cmp-03
+    kind: compare
+    question: O que acontece se o pagamento for recusado?
+    expect: { mentions_any: [recusad, não é aprovad, não aprovad] }
+  - id: cmp-04
+    kind: compare
+    question: A loja emite nota fiscal?
+    expect: { mentions_any: [nota fiscal] }
+  - id: cmp-05
+    kind: compare
+    question: Qual é o prazo de entrega?
+    expect: { not_found: true }
