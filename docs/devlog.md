@@ -143,3 +143,16 @@ Uma entrada por sessão de trabalho: o que foi pedido, o que saiu, o que preciso
   - o `mermaid` carrega só quando a aba abre, em pacotes separados.
 - **Ajuste no caminho:** quando o Mermaid não consegue desenhar, ele deixa um bloco de erro solto no fim da página. O componente agora o remove ao mostrar o texto do diagrama no lugar.
 - **Pendente:** teste real das Fases 7 e 9 quando a cota voltar.
+
+## 2026-11-06 — Extra: link do GitHub
+
+- **Pedido:** avaliar o esforço de aceitar link de site ou de repositório do GitHub e, depois do ok, implementar a importação de repositório público do GitHub.
+- **Avaliação:**
+  - **Link do GitHub: pouco trabalho.** O GitHub entrega o repositório como `.zip`, e o extrator de zip já fazia todo o resto.
+  - **Site qualquer: bem mais trabalho.** Exigiria converter HTML em texto (com uma dependência nova), proteger contra SSRF e lidar com sites que só aparecem com JavaScript. Ficou de fora.
+- **Resultado:** 147 testes no backend (23 novos, de leitura do link e download com `MockTransport`, sem rede) e 15 no frontend. Na tela, com o GitHub real:
+  - `github.com/pallets/markupsafe` entrou com 41 arquivos e 17,1 mil tokens;
+  - o link de subpasta mostrou o aviso;
+  - repositório inexistente devolveu "Só repositórios públicos são aceitos".
+- **Ajuste no caminho:** o campo com `type="url"` fazia o navegador recusar links sem `https://`, que o backend aceita. Virou campo de texto.
+- **Projeto de teste:** "Teste link GitHub" ficou no banco em rascunho, com o markupsafe.

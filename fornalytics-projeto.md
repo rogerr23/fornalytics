@@ -115,7 +115,7 @@ O maior risco de uma ferramenta assim é inventar funcionalidades. O Fornalytics
 - Lentes personalizadas (investidor, jurídico, QA…)
 - Linha do tempo do produto (comparação entre versões)
 - Compartilhar uma lente por link
-- Integração direta com GitHub/GitLab e atualização automática a cada commit
+- Integração direta com GitHub/GitLab e atualização automática a cada commit (a importação única de repositório público do GitHub por link já existe; falta repositório privado, GitLab e sincronização)
 - Uso do Claude como IA em execução (a arquitetura já está pronta para trocar o provedor)
 
 ---

@@ -4,6 +4,13 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 
 ## [Não lançado]
 
+### Extra — link de repositório do GitHub
+- `POST /sources` aceita o campo `url` com o link de um repositório **público** do GitHub (`github.com/dono/repo` ou `.../tree/branch`). O repositório é baixado como `.zip` e passa pelo mesmo extrator, filtros e limites do envio.
+- Endereço de download montado no backend (host fixo do GitHub, sem seguir redirecionamentos) e corte em `MAX_UPLOAD_MB` durante o download.
+- Mensagens amigáveis para repositório privado ou inexistente (422), subpasta e GitHub indisponível (502, novo erro `SourceUnavailable`).
+- Aba **Link do GitHub** na tela de material; a fonte aparece como `github.com/dono/repo`.
+- Sem dependência nova (`httpx`) e sem migração. ADR 0003.
+
 ### Fase 9 — fluxos com Mermaid
 - `GET /flows`: os fluxos da base desenhados como sequências, sem chamar a IA.
 - `POST /flow`: "o que acontece quando…?" em uma chamada. O modelo devolve passos, nós e arestas; o backend confere as evidências, aplica os limites (10 passos, 12 nós) e monta o Mermaid.

@@ -70,6 +70,7 @@ A ingestão acontece **no envio** de cada fonte; o processamento faz só a extra
 
 ### 4.1 Ingestão (`backend/app/ingestion/`)
 - `.zip`: `zipfile` da biblioteca padrão. `.pdf`: `pdfplumber`. `.docx`: `python-docx`. `.md`, `.txt` e texto colado: direto.
+- **Link de repositório público do GitHub** (`ingestion/remote/github.py`): do link saem só dono, repositório e branch; o backend baixa o `.zip` de `codeload.github.com` (host fixo, sem seguir redirecionamentos, corte em `MAX_UPLOAD_MB`) e o passa ao mesmo extrator de zip. Sem repositório privado, subpasta ou sincronização (ADR 0003).
 - Ignorar: `node_modules`, `.git`, `dist`, `build`, `.next`, `venv`, `.venv`, `__pycache__`, lockfiles, imagens, fontes, binários, arquivos minificados e arquivos acima de 200 KB.
 - Priorizar: README, rotas/controllers, models/schemas, services, config.
 - Cada arquivo de código é salvo com caminho relativo e conteúdo. Ao montar o contexto para o modelo, renderizar com linhas numeradas:
@@ -156,7 +157,7 @@ Prefixo `/api`. Respostas longas via **SSE** (Server-Sent Events).
 |---|---|---|
 | POST | `/projects` | Criar projeto |
 | GET | `/projects`, `/projects/{id}` | Listar / detalhar |
-| POST | `/projects/{id}/sources` | Formulário multipart com `type` e `file` **ou** `title` + `content` (texto colado); faz a ingestão na hora e devolve o resumo (arquivos usados/ignorados, tokens, o que fica de fora) |
+| POST | `/projects/{id}/sources` | Formulário multipart com `type` e `file`, **ou** `type=code` + `url` (repositório público do GitHub), **ou** `title` + `content` (texto colado); faz a ingestão na hora e devolve o resumo (arquivos usados/ignorados, tokens, o que fica de fora) |
 | GET | `/projects/{id}/sources` | Lista as fontes do projeto |
 | DELETE | `/projects/{id}/sources/{source_id}` | Remove uma fonte (marca a base como desatualizada) |
 | POST | `/projects/{id}/process` | Dispara a extração pela IA (promessas + base) em segundo plano; responde na hora (202) |
@@ -239,6 +240,7 @@ backend/
 │   ├── projects/service.py   # ProjectService (criar, listar, detalhar)
 │   ├── ingestion/
 │   │   ├── extractors/       # um extractor por formato (zip, pdf, docx, text) + registro
+│   │   ├── remote/           # fontes da internet (github.py: link → .zip)
 │   │   ├── filters.py        # o que ignorar e o que priorizar
 │   │   ├── selection.py      # corte por prioridade dentro de um limite de tokens
 │   │   ├── limits.py         # limite por etapa (documentos, código) de um projeto
@@ -376,6 +378,7 @@ Marque `[x]` ao concluir cada item e atualize esta lista no mesmo commit.
 - [x] **Fase 7, lado a lado (uma chamada para as 3 lentes) e "Isso faz?"**
 - [x] **Fase 8, Ideia × Código:** rota `GET` que agrupa a base por status e a tela em três colunas (sem chamada à IA)
 - [x] **Fase 9, fluxo com Mermaid:** modelo devolve passos, nós e arestas; o backend monta o Mermaid
+- [x] **Extra, link do GitHub:** importar repositório público pelo link, reaproveitando o extrator de zip (ADR 0003)
 - [ ] **Fase 10, demo:** app e escopo em `demo/`, rodar o fluxo completo de ponta a ponta
 - [ ] **Fase 11, qualidade:** rodar o conjunto de avaliação, ajustar prompts, acabamento visual, respostas da demo salvas como reserva
 
@@ -487,6 +490,7 @@ Marque `[x]` ao concluir cada item e atualize esta lista no mesmo commit.
 | 2026-11-06 | Fluxos perguntados não são gravados; limite de 10 passos e 12 nós | Igual ao lado a lado; o diagrama cabe na tela e a resposta não vem cortada |
 | 2026-11-06 | `mermaid` carregado sob demanda no frontend, em modo `strict` | Não pesar o carregamento inicial; segurança do SVG |
 | 2026-11-06 | Extração com ~56 mil tokens de código passou sem 429 no `gemini-3.5-flash` | Primeiro teste real; o limite de 200 mil por etapa segue sem teste num repositório desse tamanho |
+| 2026-11-06 | Importar repositório **público** do GitHub por link (uma vez, sem OAuth nem sincronização), baixando o `.zip` de host fixo e reaproveitando o extrator de zip (ADR 0003) | Pedido do Roger; traz para o escopo só a parte simples do item da seção 4.3, sem dependência nova nem migração e sem risco de SSRF |
 
 ---
 

@@ -7,6 +7,7 @@ Como o material enviado vira texto no banco. Acontece **no envio** de cada fonte
 | Formato | Extrator | `type` aceito |
 |---|---|---|
 | `.zip` (repositório) | `zipfile` (em memória, nunca no disco) | `code` |
+| Link de repositório público do GitHub (`url`) | baixado como `.zip` e lido pelo mesmo extrator (ver [Repositório do GitHub](#repositório-do-github)) | `code` |
 | `.pdf` | `pdfplumber`, com uma linha `--- página N ---` antes de cada página | `idea_doc`, `transcript` |
 | `.docx` | `python-docx` (parágrafos e tabelas, células separadas por ` \| `) | `idea_doc`, `transcript` |
 | `.md`, `.txt` | leitura direta | `idea_doc`, `transcript` |
@@ -25,7 +26,8 @@ Formulário `multipart/form-data`:
 |---|---|
 | `type` | Sempre |
 | `file` | Para enviar arquivo |
-| `title`, `content` | Para colar texto (sem `file`) |
+| `url` | Para importar um repositório público do GitHub (sem `file`; `type` sempre `code`) |
+| `title`, `content` | Para colar texto (sem `file` nem `url`) |
 
 Para testar sem frontend: `npm run dev`, abra http://localhost:8000/docs, crie um projeto em `POST /api/projects` e use **Try it out** em `POST /api/projects/{project_id}/sources`.
 
@@ -64,6 +66,24 @@ Zips baixados do GitHub vêm com uma pasta por fora (`loja-main/`); ela é remov
 | `MAX_FILES` | 2000 | Número de arquivos no zip (413) |
 
 Zip com senha ou corrompido, formato não suportado e tipo incompatível com o arquivo devolvem 422 com a explicação em português.
+
+## Repositório do GitHub
+
+Código em `ingestion/remote/github.py`. Decisão em [ADR 0003](adr/0003-importacao-por-link-do-github.md).
+
+- **Links aceitos:** `github.com/dono/repo`, com ou sem `https://`, `www.`, `.git`, barra final, `?…` ou `#…`, e `github.com/dono/repo/tree/branch`. Sem branch, vale o branch padrão do repositório.
+- **Recusados com explicação (422):** outro site, link sem o nome do repositório, página interna (`/issues`, `/blob/…`), subpasta (`/tree/main/src`) e branch com `/` no nome (não dá para separar do caminho da subpasta).
+- **Download:** só o dono, o repositório e o branch saem do link. O endereço é montado no backend, sempre em `https://codeload.github.com/{dono}/{repo}/zip/{branch ou HEAD}`, e redirecionamentos não são seguidos. Assim um link nunca faz o servidor acessar outro endereço.
+- **Limites:** o download é lido aos poucos e para ao passar de `MAX_UPLOAD_MB` (413). Depois, o zip passa pelo `ZipExtractor`, com os mesmos filtros, `MAX_UNZIPPED_MB` e `MAX_FILES` do envio. Tempo máximo de 120 s.
+- **Nome da fonte:** `github.com/dono/repo` ou `github.com/dono/repo@branch` (campo `filename`, sem migração).
+- **Erros:**
+
+  | Situação | Resposta |
+  |---|---|
+  | Repositório ou branch inexistente, ou repositório privado (o GitHub responde 404 nos dois casos) | 422, "Só repositórios públicos são aceitos" |
+  | GitHub limitando downloads (403/429), outro erro do GitHub, timeout ou sem internet | 502 (`SourceUnavailable`), sugerindo tentar de novo ou enviar o `.zip` |
+
+- **O que não faz:** repositório privado (exigiria token), GitLab, subpasta e atualização automática a cada commit. Para trazer uma versão nova, remova a fonte e importe de novo.
 
 ## Prioridade e corte (`filters.path_priority`, `selection.py`, `limits.py`)
 

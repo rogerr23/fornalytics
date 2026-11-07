@@ -128,7 +128,7 @@ Detalhes das camadas e das regras de código em [`docs/architecture.md`](docs/ar
 Com `npm run dev` rodando, abra http://localhost:5173:
 
 1. **Novo projeto** → dê um nome ao produto.
-2. **Material:** envie o código (`.zip`) e, se tiver, o documento da ideia (PDF, DOCX, MD ou TXT) ou cole um texto. Cada envio mostra os arquivos lidos, os ignorados e o que ficaria fora do limite.
+2. **Material:** envie o código (`.zip` ou o link de um repositório público do GitHub) e, se tiver, o documento da ideia (PDF, DOCX, MD ou TXT) ou cole um texto. Cada envio mostra os arquivos lidos, os ignorados e o que ficaria fora do limite.
 3. **Processar:** a tela mostra cada etapa da IA. Pode levar alguns minutos, e recarregar a página não perde o progresso.
 4. **Projeto:** escolha a lente (Cliente, Não técnico ou Técnico) no canto superior.
    - **Visão geral:** gerada na primeira abertura de cada lente; depois vem do cache.
@@ -145,7 +145,7 @@ Com `npm run dev` rodando, abra http://localhost:5173:
 Com `npm run dev` rodando, abra http://localhost:8000/docs:
 
 1. `POST /api/projects` → **Try it out** → `{"name": "Meu projeto"}`.
-2. `POST /api/projects/{project_id}/sources` → escolha `type` (`code` para `.zip`) e o arquivo, ou `title` + `content` para colar texto.
+2. `POST /api/projects/{project_id}/sources` → escolha `type` (`code` para `.zip`) e o arquivo, `type=code` + `url` para um repositório público do GitHub, ou `title` + `content` para colar texto.
 3. A resposta mostra os arquivos usados, os ignorados e o que ficaria de fora do limite. Formatos, filtros e limites em [`docs/ingestion.md`](docs/ingestion.md).
 
 ---
