@@ -180,12 +180,13 @@ Prefixo `/api`. Respostas longas via **SSE** (Server-Sent Events).
 ## 7. Frontend
 
 - React + Vite + TypeScript, Tailwind CSS, TanStack Query, `react-markdown`, `mermaid`.
+- **Identidade visual: Extreme Group Design System** (ADR 0004, detalhes em `docs/design.md`). Montserrat, preto, branco e cinza, cantos de 4px (controles) e 8px (cartões), linhas finas em vez de sombra, sem degradê e **sem emoji**; ícones de traço em SVG (`shared/ui/Icon.tsx`). As cores padrão do Tailwind estão desligadas no `@theme`: só existem os tokens da marca.
 - Interface em **português do Brasil**.
 - Telas: lista de projetos → criação/upload → processamento (progresso por etapas) → projeto com abas **Visão geral**, **Chat**, **Lado a lado**, **Isso faz?**, **Ideia × Código** e **Fluxos**.
 - No upload, cada fonte mostra o resumo da ingestão logo após o envio (arquivos usados, ignorados, tokens) e, se passar do limite, um aviso com a lista do que fica de fora. Fontes podem ser removidas.
 - No projeto, quando `base_outdated` for verdadeiro, um aviso "O material mudou" com botão **Reprocessar** aparece acima das abas.
 - Seletor de lente sempre visível e alternável a qualquer momento.
-- Ideia × Código em três colunas: ✅ prometido e implementado, ⚠️ prometido e não implementado, 🔍 implementado e não documentado.
+- Ideia × Código em três colunas numeradas: 01 prometido e implementado, 02 prometido e não implementado, 03 implementado e não documentado (cada uma com um ponto de status: verde, âmbar e azul-marinho).
 - Erros de cota (429) aparecem como aviso amigável, nunca como tela quebrada.
 
 ---
@@ -379,6 +380,7 @@ Marque `[x]` ao concluir cada item e atualize esta lista no mesmo commit.
 - [x] **Fase 8, Ideia × Código:** rota `GET` que agrupa a base por status e a tela em três colunas (sem chamada à IA)
 - [x] **Fase 9, fluxo com Mermaid:** modelo devolve passos, nós e arestas; o backend monta o Mermaid
 - [x] **Extra, link do GitHub:** importar repositório público pelo link, reaproveitando o extrator de zip (ADR 0003)
+- [x] **Extra, identidade visual:** estilo do Extreme Group Design System em todo o frontend, com arrastar e soltar, etapas da jornada, telas vazias e de carregamento (ADR 0004)
 - [ ] **Fase 10, demo:** app e escopo em `demo/`, rodar o fluxo completo de ponta a ponta
 - [ ] **Fase 11, qualidade:** rodar o conjunto de avaliação, ajustar prompts, acabamento visual, respostas da demo salvas como reserva
 
@@ -407,7 +409,7 @@ Marque `[x]` ao concluir cada item e atualize esta lista no mesmo commit.
   - Antes de propor, confere `git status` e roda testes/lint do que foi mexido.
 - **Dependências aprovadas** (além das citadas nas seções 3, 4, 5 e 7):
   - Backend: `fastapi`, `uvicorn[standard]`, `pydantic-settings`, `sqlalchemy[asyncio]`, `psycopg[binary]`, `alembic`, `python-multipart` (upload), `httpx` (Ollama), `pyyaml` (evals). Dev: `pytest`, `pytest-asyncio`, `ruff`.
-  - Frontend: `react-router-dom`, `remark-gfm` (tabelas no Markdown das respostas). Dev: `vitest`, `@testing-library/react`, `eslint`, `prettier`.
+  - Frontend: `react-router-dom`, `remark-gfm` (tabelas no Markdown das respostas), `@fontsource-variable/montserrat` (fonte da marca embutida, funciona sem internet). Dev: `vitest`, `@testing-library/react`, `eslint`, `prettier`.
   - Raiz (dev): `concurrently` (sobe backend e frontend juntos em qualquer sistema).
   - SSE feito com `StreamingResponse` do FastAPI no backend e `fetch` + leitura do stream no frontend, sem biblioteca extra.
 - **Antes de adicionar uma dependência fora das listadas aqui, pergunte.** Nunca adicione algo pago.
@@ -491,6 +493,10 @@ Marque `[x]` ao concluir cada item e atualize esta lista no mesmo commit.
 | 2026-11-06 | `mermaid` carregado sob demanda no frontend, em modo `strict` | Não pesar o carregamento inicial; segurança do SVG |
 | 2026-11-06 | Extração com ~56 mil tokens de código passou sem 429 no `gemini-3.5-flash` | Primeiro teste real; o limite de 200 mil por etapa segue sem teste num repositório desse tamanho |
 | 2026-11-06 | Importar repositório **público** do GitHub por link (uma vez, sem OAuth nem sincronização), baixando o `.zip` de host fixo e reaproveitando o extrator de zip (ADR 0003) | Pedido do Roger; traz para o escopo só a parte simples do item da seção 4.3, sem dependência nova nem migração e sem risco de SSRF |
+| 2026-11-06 | Identidade visual do Extreme Group Design System no frontend (estilo D entre 4 protótipos) (ADR 0004) | Escolha do Roger; o Fornalytics é do programa de estágio da Extreme |
+| 2026-11-06 | Cores padrão do Tailwind desligadas (`--color-*: initial`); só tokens da marca | Uma classe fora da marca não gera cor nenhuma, em vez de uma cor errada |
+| 2026-11-06 | Montserrat via `@fontsource-variable/montserrat`, não Google Fonts | A demo funciona sem internet; pacote gratuito (OFL) |
+| 2026-11-06 | Ícones de traço em SVG próprios (`shared/ui/Icon.tsx`) no lugar de emoji; sem biblioteca de ícones | O design system proíbe emoji; poucos ícones não justificam dependência |
 
 ---
 
@@ -513,6 +519,7 @@ Toda fase termina com a doc atualizada **no mesmo commit** do código. Docs téc
 | `docs/evals/AAAA-MM-DD.md` | Resultado de cada rodada do conjunto de avaliação | Fase 11 (e quando mexer em prompt) |
 | `docs/runbook.md` | Problemas comuns e solução (429, Neon dormindo, Ollama, CORS) | Sempre que um problema tomar mais de 10 minutos |
 | `docs/demo-script.md` | Roteiro da apresentação, perguntas e respostas esperadas | Fase 10 |
+| `docs/design.md` | Identidade visual: tokens, componentes de `shared/ui` e regras | Quando mudar token, componente base ou regra visual |
 | `docs/devlog.md` | Diário da construção com o Claude Code: o que foi pedido, o que saiu, o que foi corrigido | Ao fim de cada sessão de trabalho. Vira material da apresentação |
 
 ---

@@ -4,6 +4,27 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 
 ## [Não lançado]
 
+### Extra — identidade visual Extreme Group
+- Frontend inteiro no estilo do **Extreme Group Design System**, escolhido entre quatro protótipos:
+  - Montserrat (embutida com `@fontsource-variable/montserrat`);
+  - preto, branco e cinza, com status em cores apagadas;
+  - cantos de 4 e 8 px e linhas finas no lugar de sombras.
+- Tokens no `@theme` do Tailwind, com as cores padrão desligadas. Componentes de `shared/ui` refeitos e novos componentes: `Icon` (traço em SVG, sem emoji), `Skeleton`, `EmptyState`, `Dropzone`, `Page` (cabeçalho, faixa preta, números) e `Steps`.
+- Melhorias de experiência:
+  - lista de projetos em cartões, com o próximo passo de cada um;
+  - etapas da jornada (nome → material → processamento → explicações);
+  - envio de arquivo com **arrastar e soltar**;
+  - faixa preta no projeto, com fontes, arquivos e tokens;
+  - seletor de lente segmentado;
+  - abas com ícones;
+  - blocos de carregamento no lugar de spinners soltos;
+  - colunas numeradas 01/02/03 no Ideia × Código;
+  - veredito do "Isso faz?" com ícone;
+  - visualizador de citação com as linhas marcadas;
+  - link "Pular para o conteúdo" e foco preto de 2 px;
+  - animação desligada para quem configurou "reduzir movimento" no sistema.
+- Favicon próprio no lugar do logo padrão do Vite. `docs/design.md` e ADR 0004.
+
 ### Extra — link de repositório do GitHub
 - `POST /sources` aceita o campo `url` com o link de um repositório **público** do GitHub (`github.com/dono/repo` ou `.../tree/branch`). O repositório é baixado como `.zip` e passa pelo mesmo extrator, filtros e limites do envio.
 - Endereço de download montado no backend (host fixo do GitHub, sem seguir redirecionamentos) e corte em `MAX_UPLOAD_MB` durante o download.

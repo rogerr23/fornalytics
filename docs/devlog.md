@@ -156,3 +156,15 @@ Uma entrada por sessão de trabalho: o que foi pedido, o que saiu, o que preciso
   - repositório inexistente devolveu "Só repositórios públicos são aceitos".
 - **Ajuste no caminho:** o campo com `type="url"` fazia o navegador recusar links sem `https://`, que o backend aceita. Virou campo de texto.
 - **Projeto de teste:** "Teste link GitHub" ficou no banco em rascunho, com o markupsafe.
+
+## 2026-11-06 — Extra: identidade visual
+
+- **Pedido:** melhorar a UI e a UX com um estilo diferente.
+- **Protótipos:** quatro direções num canvas (editorial, ferramenta de dev, colorido e Extreme Group), todas com a mesma tela (Ideia × Código). O Roger escolheu a **D, Extreme Group**.
+- **Execução:** tokens do design system no `@theme` do Tailwind, com as cores padrão desligadas, componentes de `shared/ui` refeitos e todas as telas reestilizadas, sem mexer em hooks, API ou tipos. Testes, lint, typecheck e build passando.
+- **Conferido no navegador** (desktop e celular). Como nenhum projeto do banco tem base, a aba Ideia × Código, os Fluxos e o visualizador de citação foram vistos com respostas simuladas só naquela aba do navegador, sem gravar nada.
+- **Ajustes no caminho:**
+  - o seletor de lente esticava na largura toda;
+  - no celular, a tela de material vazava para o lado (grade sem `minmax(0,1fr)`);
+  - as abas do tipo de material escondiam "Documento" e "Colar texto"; agora quebram a linha;
+  - os títulos das colunas do Ideia × Código ficavam desalinhados quando quebravam.

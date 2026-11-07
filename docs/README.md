@@ -6,8 +6,9 @@ A tabela completa (o que vai em cada doc e quando atualizar) está na seção 14
 | Doc | Status |
 |---|---|
 | [devlog.md](devlog.md) | Ativo |
-| [adr/](adr/) | Ativo (modelo em `0000-template.md`; [0001 — camadas](adr/0001-arquitetura-em-camadas.md); [0002 — Ideia × Código derivado da base](adr/0002-ideia-x-codigo-derivado-da-base.md); [0003 — importação por link do GitHub](adr/0003-importacao-por-link-do-github.md)) |
+| [adr/](adr/) | Ativo (modelo em `0000-template.md`; [0001 — camadas](adr/0001-arquitetura-em-camadas.md); [0002 — Ideia × Código derivado da base](adr/0002-ideia-x-codigo-derivado-da-base.md); [0003 — importação por link do GitHub](adr/0003-importacao-por-link-do-github.md); [0004 — identidade visual Extreme](adr/0004-identidade-visual-extreme.md)) |
 | [architecture.md](architecture.md) | Ativo |
+| [design.md](design.md) | Ativo |
 | [data-model.md](data-model.md) | Ativo |
 | [llm.md](llm.md) | Ativo |
 | [ingestion.md](ingestion.md) | Ativo |
