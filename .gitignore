@@ -56,3 +56,6 @@ Desktop.ini
 *~
 *.suo
 *.sln
+
+# --- Demo ---
+demo/loja.zip
